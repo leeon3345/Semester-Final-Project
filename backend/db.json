@@ -1,30 +1,126 @@
 {
   "users": [],
+  "schedules": [],
   "attractions": [
     {
       "id": 1,
-      "name": "경복궁",
+      "name": "The Grand Palace",
       "category": "history",
-      "cost": 3000,
-      "desc": "조선 시대의 법궁",
-      "image": "https://via.placeholder.com/300?text=Gyeongbokgung"
+      "cost": 20000,
+      "desc": "The official residence of the Kings of Siam.",
+      "image": "https://via.placeholder.com/300?text=Grand+Palace"
     },
     {
       "id": 2,
-      "name": "N서울타워",
-      "category": "view",
-      "cost": 16000,
-      "desc": "서울의 랜드마크",
-      "image": "https://via.placeholder.com/300?text=N+Tower"
+      "name": "Wat Arun",
+      "category": "history",
+      "cost": 4000,
+      "desc": "Temple of Dawn, famous for its riverside prang.",
+      "image": "https://via.placeholder.com/300?text=Wat+Arun"
     },
     {
       "id": 3,
-      "name": "롯데월드",
+      "name": "Chatuchak Market",
+      "category": "shopping",
+      "cost": 0,
+      "desc": "The largest weekend market in Thailand.",
+      "image": "https://via.placeholder.com/300?text=Chatuchak"
+    },
+    {
+      "id": 4,
+      "name": "Wat Pho",
+      "category": "history",
+      "cost": 8000,
+      "desc": "Temple of the Reclining Buddha and Thai massage school.",
+      "image": "https://via.placeholder.com/300?text=Wat+Pho"
+    },
+    {
+      "id": 5,
+      "name": "Khao San Road",
       "category": "activity",
-      "cost": 59000,
-      "desc": "실내 테마파크",
-      "image": "https://via.placeholder.com/300?text=Lotte+World"
+      "cost": 0,
+      "desc": "World famous backpacker hub with nightlife.",
+      "image": "https://via.placeholder.com/300?text=Khao+San+Road"
+    },
+    {
+      "id": 6,
+      "name": "ICONSIAM",
+      "category": "shopping",
+      "cost": 0,
+      "desc": "Luxury riverside shopping mall with indoor floating market.",
+      "image": "https://via.placeholder.com/300?text=ICONSIAM"
+    },
+    {
+      "id": 7,
+      "name": "Mahanakhon SkyWalk",
+      "category": "view",
+      "cost": 35000,
+      "desc": "Thailand's highest observation deck with a glass floor.",
+      "image": "https://via.placeholder.com/300?text=SkyWalk"
+    },
+    {
+      "id": 8,
+      "name": "Lumphini Park",
+      "category": "view",
+      "cost": 0,
+      "desc": "Green oasis in the city center, verify monitor lizards.",
+      "image": "https://via.placeholder.com/300?text=Lumphini+Park"
+    },
+    {
+      "id": 9,
+      "name": "Asiatique The Riverfront",
+      "category": "activity",
+      "cost": 0,
+      "desc": "Open-air mall with night market and ferris wheel.",
+      "image": "https://via.placeholder.com/300?text=Asiatique"
+    },
+    {
+      "id": 10,
+      "name": "Jim Thompson House",
+      "category": "history",
+      "cost": 8000,
+      "desc": "Museum of American silk entrepreneur with Thai architecture.",
+      "image": "https://via.placeholder.com/300?text=Jim+Thompson"
+    },
+    {
+      "id": 11,
+      "name": "Chao Phraya Cruise",
+      "category": "activity",
+      "cost": 45000,
+      "desc": "Dinner cruise viewing illuminated temples at night.",
+      "image": "https://via.placeholder.com/300?text=River+Cruise"
+    },
+    {
+      "id": 12,
+      "name": "Chinatown (Yaowarat)",
+      "category": "food",
+      "cost": 0,
+      "desc": "Famous street food district with neon lights.",
+      "image": "https://via.placeholder.com/300?text=Chinatown"
+    },
+    {
+      "id": 13,
+      "name": "Central World",
+      "category": "shopping",
+      "cost": 0,
+      "desc": "One of the largest shopping complexes in the world.",
+      "image": "https://via.placeholder.com/300?text=Central+World"
+    },
+    {
+      "id": 14,
+      "name": "Wat Saket (Golden Mount)",
+      "category": "view",
+      "cost": 2000,
+      "desc": "Historic temple on a hill offering city views.",
+      "image": "https://via.placeholder.com/300?text=Golden+Mount"
+    },
+    {
+      "id": 15,
+      "name": "Jodd Fairs Night Market",
+      "category": "food",
+      "cost": 0,
+      "desc": "Trendy night market with vintage vibes and street food.",
+      "image": "https://via.placeholder.com/300?text=Jodd+Fairs"
     }
-  ],
-  "schedules": []
+  ]
 }

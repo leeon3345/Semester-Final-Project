@@ -48,3 +48,31 @@
 [AI Question] "npm install 후 뜨는 취약점 경고 메시지가 위험한 거야?"
 
 [Solution] 로컬 개발 환경에서는 무시해도 되는 수준임을 확인하고 개발 진행.
+
+8. API 통신 모듈 구현 (API Wrapper)
+[Problem] 팀원들이 각자 fetch를 사용하면 추후 토큰 인증 로직 적용 시 모든 코드를 수정해야 하는 비효율 발생.
+
+[AI Question] "나중에 로그인 토큰을 헤더에 자동 추가할 수 있도록, 팀원들이 공통으로 쓸 js/api.js 껍데기 함수를 만들어줘. 주석은 영어로."
+
+[Solution] BASE_URL 설정 및 fetchData 래퍼 함수를 구현하여, 향후 인증 로직(Authorization 헤더) 추가가 용이한 확장성 있는 구조 마련.
+
+9. DB 초기 데이터 구축 (Seeding)
+[Problem] 개발 초기 단계라 db.json이 비어 있어, 프론트엔드 팀원이 관광지 목록 표시 기능을 테스트할 수 없음.
+
+[AI Question] "방콕 관광지 15곳을 추천해서 db.json의 attractions 배열 포맷(ID, 이름, 카테고리, 이미지 등)에 맞춰 JSON 데이터로 만들어줘."
+
+[Solution] AI가 생성한 방콕 관광지 샘플 데이터 15건을 db.json에 주입하여 즉시 테스트 가능한 환경 조성.
+
+10. 인증 페이지 및 로직 구현
+[Problem] 로그인과 회원가입 페이지를 별도로 구성해야 하는데, HTML 구조와 JS 로직(fetchData 활용) 작성이 필요함.
+
+[AI Question] "api.js를 활용한 auth.js 핵심 로직을 영어 텍스트 기반으로 짜줘."
+
+[Solution] localStorage에 JWT 토큰을 저장하는 보안 로직이 포함된 auth.js 인증 시스템 구축 완료.
+
+11. 깃허브 커밋 컨벤션 정립
+[Problem] 단순 설정 파일 추가나 초기 코드 작성 시 어떤 커밋 메시지 헤더(feat vs chore)를 써야 할지 모호함.
+
+[AI Question] "api.js 추가는 기능 추가니까 feat인가? 아니면 설정이니까 chore인가? 적절한 커밋 메시지를 추천해줘."
+
+[Solution] api.js는 팀원들이 사용할 유틸리티 '기능'이므로 feat을 사용하는 것이 적절함을 확인하고, feat: implement login and register pages with auth logic 등의 명확한 메시지 규칙 적용.
