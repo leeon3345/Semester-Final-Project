@@ -1,0 +1,30 @@
+{
+  "users": [],
+  "attractions": [
+    {
+      "id": 1,
+      "name": "경복궁",
+      "category": "history",
+      "cost": 3000,
+      "desc": "조선 시대의 법궁",
+      "image": "https://via.placeholder.com/300?text=Gyeongbokgung"
+    },
+    {
+      "id": 2,
+      "name": "N서울타워",
+      "category": "view",
+      "cost": 16000,
+      "desc": "서울의 랜드마크",
+      "image": "https://via.placeholder.com/300?text=N+Tower"
+    },
+    {
+      "id": 3,
+      "name": "롯데월드",
+      "category": "activity",
+      "cost": 59000,
+      "desc": "실내 테마파크",
+      "image": "https://via.placeholder.com/300?text=Lotte+World"
+    }
+  ],
+  "schedules": []
+}
