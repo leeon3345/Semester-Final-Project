@@ -1,0 +1,13 @@
+
+{
+  "name": "travel-planner",
+  "version": "1.0.0",
+  "description": "Team Project Travel Planner",
+  "scripts": {
+    "start": "json-server-auth backend/db.json --port 3000 --static frontend"
+  },
+  "dependencies": {
+    "json-server": "^0.17.4",
+    "json-server-auth": "^2.1.0"
+  }
+}
