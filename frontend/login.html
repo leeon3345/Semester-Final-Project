@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Travel Planner</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h2>✈️ Start Your Journey</h2>
+        
+        <div class="input-group">
+            <input type="email" id="login-email" placeholder="Email Address" required>
+        </div>
+        <div class="input-group">
+            <input type="password" id="login-password" placeholder="Password" required>
+        </div>
+
+        <button onclick="handleLogin()" class="btn-primary">Sign In</button>
+        
+        <p class="switch-msg">
+            Don't have an account? <a href="register.html">Sign Up</a>
+        </p>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
