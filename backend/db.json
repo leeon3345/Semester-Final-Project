@@ -1,5 +1,10 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": 1, 
+      "email": "test@user.com",
+      "password": "password123"}
+  ],
   "schedules": [],
   "attractions": [
     {
