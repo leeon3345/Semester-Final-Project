@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Schedule</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/scheduler.css"> </head>
+<body>
+    <header class="main-header">
+        <button onclick="window.location.href='schedule-list.html'" class="btn-secondary">← Back to List</button>
+        <h1>Travel Planner</h1>
+    </header>
+
+    <div class="container">
+        <section class="trip-info-section">
+            <input type="text" id="tripTitle" placeholder="Trip Title (e.g., Bangkok Adventure)" required>
+            <div class="date-group">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" required>
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" required>
+            </div>
+            <button id="addAttractionBtn" class="btn-primary">Add Attraction</button>
+        </section>
+
+        <hr>
+
+        <section class="schedule-section">
+            <h2>Selected Attractions</h2>
+            <div id="scheduleListContainer" class="attraction-cards-grid">
+                </div>
+        </section>
+
+        <section class="summary-section">
+            <p class="total-cost-display">
+                Total Estimated Cost: $<span id="totalCostDisplay">0.00</span>
+            </p>
+            <button id="saveScheduleBtn" class="btn-primary">💾 Save Schedule</button>
+        </section>
+    </div>
+
+    <div id="attractionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Select Attractions</h3>
+            <div id="attractionsList">
+                <p>Loading attractions...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/api.js"></script>
+    <script type="module" src="js/scheduler.js"></script> </body>
+</html>

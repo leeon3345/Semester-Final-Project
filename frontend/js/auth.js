@@ -1,81 +1,112 @@
-/**
- * Authentication Logic
- * ---------------------
- * Handles User Login and Registration using the API.
- * Dependencies: js/api.js (fetchData function)
- */
+// js/auth.js
 
-/**
- * Handle Login Process
- * 1. Get input values.
- * 2. Send POST request to /login.
- * 3. Save JWT token to localStorage.
- */
+// Import required functions from the API module
+import { fetchData, saveAuthToken, getAuthToken, clearAuthAndRedirect as apiClearAuth } from './api.js';
+
+// Key for storing the full user object
+const CURRENT_USER_KEY = 'currentUser';
+
+// --- Function to clear ALL local user data (Token + User Details) ---
+function clearAuthAndRedirect() {
+    apiClearAuth(); // Clear the token and redirect (from api.js)
+    localStorage.removeItem(CURRENT_USER_KEY); // Clear the user details
+}
+
+// --- Helper function to retrieve full user details ---
+async function fetchAndStoreUserDetails(userId) {
+    try {
+        // GET /600/users/:id endpoint is protected and requires Auth Token
+        const userDetails = await fetchData(`/600/users/${userId}`, { method: 'GET' });
+        
+        // Store the full details (including username) in localStorage
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userDetails));
+        console.log("User details saved:", userDetails);
+        
+    } catch(error) {
+        console.error("Failed to fetch full user details. Token might be invalid.", error);
+        alert('Warning: Login successful, but profile details failed to load. Try logging in again.');
+        throw error; 
+    }
+}
+
+
+// --- Login Logic ---
 async function handleLogin() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
-    // Basic Validation
     if (!email || !password) {
-        alert("Please enter both email and password.");
+        alert('Please enter both email and password.');
         return;
     }
 
     try {
-        // 1. Request Login to Server
-        const response = await fetchData('/login', {
+        // 1. POST /login (Get Token and User ID)
+        const data = await fetchData('/login', {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
 
-        // 2. If successful, store the token
-        if (response.accessToken) {
-            localStorage.setItem('token', response.accessToken);
-            localStorage.setItem('user', JSON.stringify(response.user));
-            
-            alert(`Welcome back, ${response.user.username || 'Traveler'}!`);
-            window.location.href = 'index.html'; // Redirect to Home
-        }
+        saveAuthToken(data.accessToken); 
+        
+        const userId = data.user.id;
+        
+        // 2. FETCH and STORE full user details
+        await fetchAndStoreUserDetails(userId); 
+        
+        // 3. Redirect
+        window.location.href = 'schedule-list.html'; 
+
     } catch (error) {
-        console.error("Login Error:", error);
-        alert("Login failed. Please check your email or password.");
+        alert('Login failed: ' + error.message);
+        console.error('Login error:', error);
     }
 }
 
-/**
- * Handle Registration Process
- * 1. Get input values.
- * 2. Send POST request to /register.
- * 3. Redirect to login page upon success.
- */
+// --- Register Logic ---
 async function handleRegister() {
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
     const username = document.getElementById('reg-username').value;
 
-    // Basic Validation
     if (!email || !password || !username) {
-        alert("Please fill in all fields.");
+        alert('Please complete all fields.');
         return;
     }
 
     try {
-        // 1. Request Registration to Server
-        // json-server-auth requires 'email' and 'password'.
-        await fetchData('/register', {
+        // 1. POST /register (Creates user, gets Token and User ID)
+        const data = await fetchData('/register', {
             method: 'POST',
-            body: JSON.stringify({ 
-                email, 
-                password, 
-                username // Additional user info
-            })
+            body: JSON.stringify({ email, password, username })
         });
 
-        alert("Registration successful! Please sign in.");
-        window.location.href = 'login.html'; // Redirect to Login page
+        saveAuthToken(data.accessToken); 
+        
+        const userId = data.user.id;
+        
+        // 2. FETCH and STORE full user details immediately after registration
+        await fetchAndStoreUserDetails(userId); 
+
+        // 3. Redirect
+        window.location.href = 'schedule-list.html'; 
 
     } catch (error) {
-        console.error("Register Error:", error);
-        alert("Registration failed. This email might already be in use.");
+        alert('Registration failed: ' + error.message);
+        console.error('Register error:', error);
     }
 }
+
+// Export functions to be globally accessible from HTML's onclick attributes
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.clearAuthAndRedirect = clearAuthAndRedirect; // Para el botón de "Log Out"
+
+// --- Initial Check: Prevent logged-in users from seeing login/register pages ---
+document.addEventListener('DOMContentLoaded', () => {
+    if (getAuthToken() && 
+        (window.location.pathname.includes('login.html') || 
+         window.location.pathname.includes('register.html'))) {
+        window.location.href = 'schedule-list.html';
+    }
+});
