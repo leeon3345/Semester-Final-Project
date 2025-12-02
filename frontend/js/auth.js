@@ -5,13 +5,29 @@
  * Dependencies: js/api.js (fetchData function)
  */
 
+// DOM이 완전히 로드된 후 이벤트 리스너를 설정합니다.
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        // login.html의 form 제출 이벤트를 handleLogin 함수와 연결
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        // register.html의 form 제출 이벤트를 handleRegister 함수와 연결
+        registerForm.addEventListener('submit', handleRegister);
+    }
+});
 /**
  * Handle Login Process
  * 1. Get input values.
  * 2. Send POST request to /login.
  * 3. Save JWT token to localStorage.
  */
-async function handleLogin() {
+async function handleLogin(event) {
+    event.preventDefault(); // form의 기본 제출 동작(새로고침) 방지
+
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
@@ -48,7 +64,9 @@ async function handleLogin() {
  * 2. Send POST request to /register.
  * 3. Redirect to login page upon success.
  */
-async function handleRegister() {
+async function handleRegister(event) {
+    event.preventDefault(); // form의 기본 제출 동작(새로고침) 방지
+
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
     const username = document.getElementById('reg-username').value;

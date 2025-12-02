@@ -1,9 +1,22 @@
 {
   "users": [
     {
-      "id": 1, 
+      "id": 1,
       "email": "test@user.com",
-      "password": "password123"}
+      "password": "password123"
+    },
+    {
+      "email": "test@naver.com",
+      "password": "$2a$10$winkpHq4gWn74qO7gmxwy.Dk2e0TWBZAGLy0uSx4up/jUC8JAisOy",
+      "username": "test",
+      "id": 2
+    },
+    {
+      "email": "test@naver.com",
+      "password": "$2a$10$NTXblOS00yM4JVzUIqM5F.TpgkYzdF4B0FmqGNh7aQnE6pBaaLGRC",
+      "username": "test",
+      "id": 3
+    }
   ],
   "schedules": [],
   "attractions": [
