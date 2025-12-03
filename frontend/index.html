@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Website Name — Home</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+<!-- GNB -->
+<header class="gnb">
+  <div class="left">
+    <button id="hamburger-btn" class="hamburger">☰</button>
+    <div class="brand"><a href="index.html" style="color:inherit;text-decoration:none">Trip Planner</a></div>
+  </div>
+  <div class="right">
+    <div id="gnb-user" style="margin-right:12px"></div>
+    <button id="gnb-login" class="btn btn-small" onclick="window.location.href='login.html'">Login</button>
+    <span id="gnb-user"></span>
+  </div>
+</header>
+
+<!-- Hamburger Menu Drawer -->
+<aside id="drawer" class="drawer" aria-hidden="true">
+  <button id="drawer-close" class="close-btn">✕</button>
+  <h3 style="margin-top:8px">Menu</h3>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="tips.html">Tips</a>
+    <a href="register.html">Sign Up</a>
+    <a href="login.html">Log In</a>
+    <a href="schedule-list.html">Schedule List</a>
+    <a href="scheduler.html">New Schedule</a>
+  </nav>
+  <div style="margin-top:20px;color:var(--muted);font-size:14px">Logged in as: <span id="drawer-user">—</span></div>
+</aside>
+
+<div class="container">
+  <!-- HERO -->
+  <section class="hero card">
+    <div class="hero-left">
+      <h1>Plan your next trip here!</h1>
+      <p>Weather, currency, scheduler and travel tips — your trip dashboard.</p>
+      <div style="margin-top:12px">
+        <button class="btn" onclick="if(!localStorage.getItem('token')) window.location.href='login.html'; else window.location.href='frontend/scheduler.html'">Open Scheduler</button>
+      </div>
+    </div>
+
+    <!-- Weather Widget -->
+    <div class="hero-right">
+      <div class="card" style="margin-bottom:12px">
+        <h3>Weather — Bangkok</h3>
+        <div class="weather-row">
+          <span id="weather-icon" class="weather-icon"></span>
+          <div id="weather-temp" class="weather-temp">—</div>
+          <div>
+            <div id="weather-desc" class="muted"></div>
+            <div id="weather-updated" class="muted" style="font-size:12px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Currency Converter Widget -->
+      <div class="card">
+        <h3>Currency Converter</h3>
+        <div class="controls">
+          <input id="ex-amount" type="number" value="10000" style="width:110px">
+          <select id="ex-from"><option>KRW</option><option>THB</option><option>USD</option><option>EUR</option></select>
+          <select id="ex-to"><option>THB</option><option>KRW</option><option>USD</option><option>EUR</option></select>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button id="ex-convert" class="btn">Convert</button>
+          <button id="ex-swap" class="btn" style="background:#fff;color:var(--primary);border:1px solid #ffd4b6">Swap</button>
+        </div>
+        <div id="ex-result" style="margin-top:10px;color:#0b1220"></div>
+        <div id="ex-error" style="display:none;color:#b00020;margin-top:8px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Full-Width Slideshow -->
+  <div class="slideshow-wrapper-full">
+    <div class="slideshow-container">
+
+        <div class="mySlides fade">
+            <img src="https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=3150&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+        </div>
+
+        <div class="mySlides fade">
+            <img src="https://plus.unsplash.com/premium_photo-1693149386423-2e4e264712e5?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+        </div>
+
+        <div class="mySlides fade">
+            <img src="https://images.unsplash.com/photo-1490077476659-095159692ab5?q=80&w=2302&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+        </div>
+
+    </div>
+</div>
+
+
+
+  </section>
+
+  <div class="footer">© Cocoa Team — Final Project</div>
+</div>
+
+<script src="js/home.js"></script>
+<script src="js/chatbot.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  // drawer init already runs in home.js via initPage() previously; ensure it's initialized
+  initPage && initPage();
+
+  // set drawer user display
+  const drawerUser = document.getElementById('drawer-user');
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  drawerUser && (drawerUser.textContent = currentUser ? currentUser.username : '—');
+
+  // weather & currency bindings
+  fetchAndRenderWeather('Bangkok');
+
+  document.getElementById('ex-convert').addEventListener('click', ()=>{
+    const amt = Number(document.getElementById('ex-amount').value) || 0;
+    const from = document.getElementById('ex-from').value;
+    const to = document.getElementById('ex-to').value;
+    convertCurrency(amt, from, to);
+  });
+  document.getElementById('ex-swap').addEventListener('click', ()=>{
+    const from = document.getElementById('ex-from');
+    const to = document.getElementById('ex-to');
+    const tmp = from.value; from.value = to.value; to.value = tmp;
+    document.getElementById('ex-convert').click();
+  });
+
+});
+</script>
+</body>
+</html>
