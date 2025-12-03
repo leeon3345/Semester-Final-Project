@@ -1,45 +1,86 @@
 /**
  * API Configuration
  * ------------------
- * This file handles all server communication.
- * All team members should use the 'fetchData' function instead of the raw 'fetch'.
  */
 
 // 1. Backend Server URL
-// If you are using Live Server for frontend, keep this localhost URL.
 const BASE_URL = "http://localhost:3000";
 
+// 2. Key for storing the Auth Token in localStorage
+const AUTH_TOKEN_KEY = 'authToken';
+
+// 3. Key for storing the full user object
+const CURRENT_USER_KEY = 'currentUser'; 
+
+// --- Utility Functions for Token Management ---
+
+export function saveAuthToken(token) {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+}
+
+export function getAuthToken() {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
 /**
- * 2. Common Fetch Wrapper
- * Use this function to send requests to the server.
- * It automatically handles the Base URL and Content-Type.
- * * @param {string} endpoint - API Endpoint (e.g., "/attractions", "/login")
- * @param {object} options - Fetch options (method, body, etc.)
- * @returns {Promise<any>} - JSON response from the server
+ * Clears the authentication token, user details, and redirects to the login page.
  */
-async function fetchData(endpoint, options = {}) {
-    // Basic Headers
+export function clearAuthAndRedirect() {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(CURRENT_USER_KEY); // Elimina los detalles del usuario
+    window.location.href = 'login.html'; 
+}
+
+/**
+ * Checks if a user is logged in. If not, redirects them.
+ */
+export function checkAuthAndRedirect() {
+    if (!getAuthToken()) {
+        console.warn('Authentication required. Redirecting to login.');
+        clearAuthAndRedirect();
+        return false;
+    }
+    return true;
+}
+
+// --- Core Fetch Wrapper ---
+
+export async function fetchData(endpoint, options = {}) {
     const headers = {
         'Content-Type': 'application/json',
-        ...options.headers // Merge with custom headers if any
+        ...options.headers 
     };
 
-    /** * TODO: [Leader] Authorization Token Logic will be added here later.
-     * When Login is implemented, the token will be automatically attached.
-     * * const token = localStorage.getItem('token');
-     * if (token) {
-     * headers['Authorization'] = `Bearer ${token}`;
-     * }
-     */
-
+    // Attach Authorization header if a token exists
+    const token = getAuthToken();
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     try {
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             ...options,
-            headers // Apply headers
+            headers
         });
 
+        // Handle 401 Unauthorized errors
+        if (response.status === 401) {
+             console.error("401 Unauthorized: Token either expired or invalid.");
+             clearAuthAndRedirect(); 
+             throw new Error("Access unauthorized. Please log in again.");
+        }
+
         if (!response.ok) {
-            throw new Error(`HTTP Error! status: ${response.status}`);
+            let errorText = await response.text();
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorText = errorJson.message || errorText;
+            } catch (e) { }
+            throw new Error(`HTTP Error! status: ${response.status} - ${errorText}`);
+        }
+
+        if (response.status === 204) {
+            return {};
         }
 
         return await response.json();
@@ -48,7 +89,3 @@ async function fetchData(endpoint, options = {}) {
         throw error;
     }
 }
-
-// Example Usage (For Teammates):
-// fetchData('/attractions');
-// fetchData('/schedules', { method: 'POST', body: JSON.stringify(data) });
