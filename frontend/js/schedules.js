@@ -10,7 +10,7 @@ const logoutBtn = document.getElementById('logoutBtn');
 // --- Rendering and Deletion Functions ---
 
 /**
- * Renders all schedules in HTML cards.
+ * Renders all schedules in HTML cards, including Edit and Delete buttons.
  * @param {Array} schedules - List of schedule objects from the API.
  */
 function renderSchedules(schedules) {
@@ -24,18 +24,37 @@ function renderSchedules(schedules) {
     schedules.forEach(schedule => {
         const card = document.createElement('div');
         card.className = 'schedule-card';
+        // Use a wrapper for buttons to allow flex layout via CSS
         card.innerHTML = `
             <h3>${schedule.title}</h3>
             <p><strong>Dates:</strong> ${schedule.startDate} to ${schedule.endDate}</p>
             <p class="cost-summary"><strong>Total Cost:</strong> $${schedule.totalCost.toFixed(2)}</p>
-            <button class="delete-btn btn-danger" data-id="${schedule.id}">Delete</button>
+            
+            <div class="card-actions">
+                <button class="edit-btn btn-secondary" data-id="${schedule.id}">✏️ Edit</button>
+                
+                <button class="delete-btn btn-danger" data-id="${schedule.id}">🗑️ Delete</button>
+            </div>
         `;
         schedulesContainer.appendChild(card);
     });
     
-    // Attach event listeners to the delete buttons
+    // Attach event listeners to the buttons
+    attachScheduleListeners();
+}
+
+/**
+ * Attaches event listeners to the dynamically created Edit and Delete buttons.
+ */
+function attachScheduleListeners() {
+    // 1. Attach Delete listener
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', handleDeleteSchedule);
+    });
+    
+    // 2. NEW: Attach Edit listener
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', handleEditSchedule);
     });
 }
 
@@ -46,15 +65,9 @@ async function loadSchedules() {
     schedulesContainer.innerHTML = '<p id="loading-msg">Loading your schedules...</p>';
     
     try {
-        const userJson = localStorage.getItem('currentUser');
-        if (!userJson) {
-            throw new Error("User details not found. Please log in again.");
-        }
-        const user = JSON.parse(userJson);
-        const userId = user.id;
-
-        // Fetch schedules associated with the logged-in user
-        const schedules = await fetchData(`/users/${userId}/schedules`, { method: 'GET' });
+        // NOTE: Using /600/schedules is the safer, protected way 
+        // that automatically filters by the user ID based on the Auth Token.
+        const schedules = await fetchData(`/600/schedules`, { method: 'GET' });
         renderSchedules(schedules);
         
     } catch (error) {
@@ -62,6 +75,18 @@ async function loadSchedules() {
         console.error('Error fetching schedules:', error);
     }
 }
+
+/**
+ * Handles the click event for the Edit button.
+ * Redirects to the scheduler page with the schedule ID for editing.
+ * @param {Event} event - The click event.
+ */
+function handleEditSchedule(event) {
+    const scheduleId = event.target.dataset.id;
+    // Redirect to scheduler.html, passing the ID as a URL query parameter
+    window.location.href = `scheduler.html?id=${scheduleId}`;
+}
+
 
 /**
  * Handles the deletion of a saved schedule.

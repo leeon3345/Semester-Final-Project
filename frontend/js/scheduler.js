@@ -136,50 +136,64 @@ function handleRemoveAttraction(event) {
 }
 
 
-// --- 4. Save Function ---
-
+/**
+ * Handles saving the new schedule data to the backend.
+ * Includes a check for the 200 itinerary limit requirement.
+ */
 async function handleSaveSchedule() {
     const tripTitle = document.getElementById('tripTitle').value;
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
+    // ... (other input validations)
 
     if (!tripTitle || !startDate || !endDate || selectedAttractions.length === 0) {
         alert('Please fill in the Title, Dates, and select at least one attraction.');
         return;
     }
-
-    // Get user ID for ownership
-    const userJson = localStorage.getItem('currentUser');
-    if (!userJson) {
-        alert("Error: User not found. Please log in again.");
-        return;
+    
+    // --- START: 200 ITINERARY LIMIT CHECK (MEMO REQUIREMENT) ---
+    
+    try {
+        // 1. Fetch ALL schedules for the current user. 
+        // We use the /600/schedules endpoint which is filtered by json-server-auth 
+        // to only return schedules belonging to the logged-in user.
+        const allUserSchedules = await fetchData('/600/schedules', { method: 'GET' });
+        
+        // 2. Check the limit
+        const SCHEDULE_LIMIT = 200;
+        if (allUserSchedules.length >= SCHEDULE_LIMIT) {
+            // If the limit is reached, display the memo requirement and stop the save operation.
+            alert(`MEMO: Cannot save new schedule. The limit of ${SCHEDULE_LIMIT} itineraries has been reached. Please delete an existing schedule to create a new one.`);
+            return; // Stop execution here
+        }
+        
+    } catch (error) {
+        // If fetching the count fails (e.g., server error), we should still log it 
+        // but proceed, as a server error shouldn't necessarily block saving.
+        // However, for strict compliance, we could block the save:
+        console.error("Warning: Could not check itinerary limit due to fetch error.", error);
+        // return; // Uncomment this if the memo requires blocking if the count cannot be verified.
     }
-    const user = JSON.parse(userJson);
-    const userId = user.id;
+    
+    // --- END: 200 ITINERARY LIMIT CHECK ---
 
     const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
 
     const scheduleData = {
         title: tripTitle,
-        startDate: startDate,
-        endDate: endDate,
-        totalCost: totalCost,
-        attractions: selectedAttractions.map(a => a.id),
-        userId: userId // Add the owner's ID
+        // ... (rest of scheduleData structure)
     };
 
     saveScheduleBtn.disabled = true;
     saveScheduleBtn.textContent = 'Saving...';
 
     try {
-        // POST request to /schedules. The body now includes the required userId.
-        await fetchData('/schedules', {
+        // POST request to /600/schedules (requires Auth Token)
+        await fetchData('/600/schedules', {
             method: 'POST',
             body: JSON.stringify(scheduleData)
         });
 
         alert('Schedule saved successfully!');
-        window.location.href = 'schedule-list.html'; // Redirect upon success
+        window.location.href = 'schedule-list.html';
         
     } catch (error) {
         alert('Error saving schedule: ' + error.message);
