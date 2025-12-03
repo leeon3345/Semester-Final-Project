@@ -12,11 +12,12 @@
 <header class="gnb">
   <div class="left">
     <button id="hamburger-btn" class="hamburger">☰</button>
-    <div class="brand"><a href="index.html" style="color:inherit;text-decoration:none">CocoaTeam</a></div>
+    <div class="brand"><a href="index.html" style="color:inherit;text-decoration:none">Trip Planner</a></div>
   </div>
   <div class="right">
     <div id="gnb-user" style="margin-right:12px"></div>
     <button id="gnb-login" class="btn btn-small" onclick="window.location.href='login.html'">Login</button>
+    <span id="gnb-user"></span>
   </div>
 </header>
 
@@ -29,7 +30,8 @@
     <a href="tips.html">Tips</a>
     <a href="register.html">Sign Up</a>
     <a href="login.html">Log In</a>
-    <a href="scheduler.html">Scheduler</a>
+    <a href="schedule-list.html">Schedule List</a>
+    <a href="scheduler.html">New Schedule</a>
   </nav>
   <div style="margin-top:20px;color:var(--muted);font-size:14px">Logged in as: <span id="drawer-user">—</span></div>
 </aside>
@@ -131,21 +133,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.getElementById('ex-convert').click();
   });
 
-  // slideshow
-  let slideIndex = 0;
-  showSlides();
-
-  function showSlides() {
-    let i;
-    let slides = document.getElementsByClassName("mySlides");
-    for (i = 0; i < slides.length; i++) {
-      slides[i].style.display = "none";
-    }
-    slideIndex++;
-    if (slideIndex > slides.length) {slideIndex = 1}
-    slides[slideIndex-1].style.display = "block";
-    setTimeout(showSlides, 4000); // Change image every 4 seconds
-  }
 });
 </script>
 </body>

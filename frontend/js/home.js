@@ -93,13 +93,12 @@ async function convertCurrency(amount, from, to) {
 
 // ---------- SLIDESHOW ----------
 let slideIndex = 0;
-showSlides();
 
 function showSlides() {
-    let slides = document.getElementsByClassName("mySlides");
+    const slides = document.getElementsByClassName("mySlides");
 
     for (let i = 0; i < slides.length; i++) {
-        slides[i].style.display = "none";
+        slides[i].classList.remove("active");
     }
 
     slideIndex++;
@@ -108,12 +107,14 @@ function showSlides() {
         slideIndex = 1;
     }
 
-    slides[slideIndex - 1].style.display = "block";
+    // Add active to current slide
+    slides[slideIndex - 1].classList.add("active");
 
-    setTimeout(showSlides, 3000); // Change slide every 3 seconds
+    // Fixed smooth & slower pace (5 seconds)
+    setTimeout(showSlides, 5000);
 }
 
-
+document.addEventListener("DOMContentLoaded", showSlides);
 
 // ---------- Init function for pages ----------
 function initPage() {
