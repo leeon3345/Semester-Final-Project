@@ -28,7 +28,7 @@ export function getAuthToken() {
 export function clearAuthAndRedirect() {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(CURRENT_USER_KEY); // Elimina los detalles del usuario
-    window.location.href = 'login.html'; 
+    window.location.href = 'index.html'; 
 }
 
 /**

@@ -1,3 +1,5 @@
+import { clearAuthAndRedirect } from "./api.js";
+
 // ---------- GNB MENU ----------
 function initDrawer() {
   const ham = document.getElementById('hamburger-btn');
@@ -13,11 +15,25 @@ function initDrawer() {
     const inside = drawer.contains(e.target) || (ham && ham.contains(e.target));
     if (!inside) drawer.classList.remove('open');
   });
+
+  // Add auth check for protected menu links
+  const protectedLinks = drawer.querySelectorAll('a[href="schedule-list.html"], a[href="scheduler.html"]');
+  protectedLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        e.preventDefault();
+        alert('Please log in to access this page.');
+        window.location.href = 'login.html';
+      }
+    });
+  });
 }
 
 // ---------- GNB HEADER ----------
 function refreshGNBUser() {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  const authToken = localStorage.getItem('authToken');
   const userSpan = document.getElementById('gnb-user');
 
   if (userSpan) {
@@ -27,11 +43,10 @@ function refreshGNBUser() {
   // Login / Logout button
   const btn = document.getElementById("auth-btn");
   if (btn) {
-    if (currentUser) {
+    if (currentUser && authToken) {
       btn.textContent = "Logout";
       btn.onclick = () => {
-        localStorage.removeItem("currentUser");
-        window.location.reload();
+        clearAuthAndRedirect();
       };
     } else {
       btn.textContent = "Login";
@@ -39,14 +54,15 @@ function refreshGNBUser() {
     }
   }
 
+  // Update drawer menu based on auth status
+  updateDrawerMenuAuth(authToken);
+
   // Delete Account button
   const deleteBtn = document.getElementById("delete-account-btn");
   if (!deleteBtn) return;
 
-  // User logged out
-  deleteBtn.style.display = currentUser ? "block" : "none";
+  deleteBtn.style.display = (currentUser && authToken) ? "block" : "none";
 
-  // User logged in
   deleteBtn.onclick = async () => {
     if (!confirm("Are you sure? Your account will be permanently deleted.")) {
       return;
@@ -62,9 +78,8 @@ function refreshGNBUser() {
         return;
       }
 
-      localStorage.removeItem("currentUser");
+      clearAuthAndRedirect();
       alert("Your account has been deleted.");
-      window.location.href = "index.html";
     } catch (error) {
       console.error(error);
       alert("Failed to delete account.");
@@ -72,8 +87,32 @@ function refreshGNBUser() {
   };
 }
 
+// Update drawer menu items based on authentication
+function updateDrawerMenuAuth(isLoggedIn) {
+  const drawer = document.getElementById('drawer');
+  if (!drawer) return;
+
+  const protectedLinks = drawer.querySelectorAll('a[href="schedule-list.html"], a[href="scheduler.html"]');
+  protectedLinks.forEach(link => {
+    if (!isLoggedIn) {
+      link.style.opacity = '0.5';
+      link.style.pointerEvents = 'none';
+      link.style.cursor = 'not-allowed';
+      link.title = 'Please log in to access this page';
+    } else {
+      link.style.opacity = '1';
+      link.style.pointerEvents = 'auto';
+      link.style.cursor = 'pointer';
+      link.title = '';
+    }
+  });
+}
+
 // ---------- WEATHER ----------
-const CITY_COORDS = { "Bangkok":{lat:13.7563,lon:100.5018}, "Seoul":{lat:37.5665,lon:126.9780} };
+const CITY_COORDS = { 
+  "Bangkok": {lat:13.7563, lon:100.5018}, 
+  "Seoul": {lat:37.5665, lon:126.9780} 
+};
 
 function getWeatherIcon(code) {
   if (code === 0) return '☀️';
@@ -84,7 +123,7 @@ function getWeatherIcon(code) {
   if (code >= 71 && code <= 77) return '🌨️';
   if (code >= 80 && code <= 82) return '🌧️';
   if (code === 95 || code === 96 || code === 99) return '⛈️';
-  return '🌡️'; // default icon
+  return '🌡️';
 }
 
 async function fetchAndRenderWeather(city='Bangkok') {
@@ -144,21 +183,18 @@ let slideIndex = 0;
 
 function showSlides() {
     const slides = document.getElementsByClassName("mySlides");
+    if (slides.length === 0) return;
 
     for (let i = 0; i < slides.length; i++) {
         slides[i].classList.remove("active");
     }
 
     slideIndex++;
-
     if (slideIndex > slides.length) {
         slideIndex = 1;
     }
 
-    // Add active to current slide
     slides[slideIndex - 1].classList.add("active");
-
-    // Fixed smooth & slower pace (5 seconds)
     setTimeout(showSlides, 5000);
 }
 
@@ -166,11 +202,49 @@ function showSlides() {
 function initPage() {
   initDrawer();
   refreshGNBUser();
+  
+  // drawer user display
+  const drawerUser = document.getElementById('drawer-user');
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  if (drawerUser) {
+    drawerUser.textContent = currentUser ? currentUser.username : '—';
+  }
+
+  // Weather initialization
+  fetchAndRenderWeather('Bangkok');
+
+  // Currency converter bindings
+  const convertBtn = document.getElementById('ex-convert');
+  const swapBtn = document.getElementById('ex-swap');
+  
+  if (convertBtn) {
+    convertBtn.addEventListener('click', () => {
+      const amt = Number(document.getElementById('ex-amount').value) || 0;
+      const from = document.getElementById('ex-from').value;
+      const to = document.getElementById('ex-to').value;
+      convertCurrency(amt, from, to);
+    });
+  }
+  
+  if (swapBtn) {
+    swapBtn.addEventListener('click', () => {
+      const fromSelect = document.getElementById('ex-from');
+      const toSelect = document.getElementById('ex-to');
+      const tmp = fromSelect.value;
+      fromSelect.value = toSelect.value;
+      toSelect.value = tmp;
+      convertBtn.click();
+    });
+  }
 }
 
 // ---------- INIT ----------
 document.addEventListener("DOMContentLoaded", () => {
-  initDrawer();
-  refreshGNBUser();
+  initPage();
   showSlides();
 });
+
+// Export functions for global access if needed
+window.initPage = initPage;
+window.fetchAndRenderWeather = fetchAndRenderWeather;
+window.convertCurrency = convertCurrency;
