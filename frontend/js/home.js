@@ -1,15 +1,13 @@
-// home.js - shared logic
-
-// ---------- Drawer (hamburger slide-out) ----------
+// ---------- GNB MENU ----------
 function initDrawer() {
   const ham = document.getElementById('hamburger-btn');
   const drawer = document.getElementById('drawer');
   const drawerClose = document.getElementById('drawer-close');
 
-  ham && ham.addEventListener('click', ()=> drawer.classList.add('open'));
-  drawerClose && drawerClose.addEventListener('click', ()=> drawer.classList.remove('open'));
+  if (ham) ham.addEventListener('click', ()=> drawer.classList.add('open'));
+  if (drawerClose) drawerClose.addEventListener('click', ()=> drawer.classList.remove('open'));
 
-  // close when clicking outside
+  // Close drawer when clicking outside
   document.addEventListener('click', (e)=>{
     if (!drawer) return;
     const inside = drawer.contains(e.target) || (ham && ham.contains(e.target));
@@ -17,11 +15,61 @@ function initDrawer() {
   });
 }
 
-// ---------- GNB username display ----------
+// ---------- GNB HEADER ----------
 function refreshGNBUser() {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
   const userSpan = document.getElementById('gnb-user');
-  if (userSpan) userSpan.textContent = currentUser ? `Hello, ${currentUser.username}` : '';
+
+  if (userSpan) {
+    userSpan.textContent = currentUser ? `Hello, ${currentUser.username}` : '';
+  }
+
+  // Login / Logout button
+  const btn = document.getElementById("auth-btn");
+  if (btn) {
+    if (currentUser) {
+      btn.textContent = "Logout";
+      btn.onclick = () => {
+        localStorage.removeItem("currentUser");
+        window.location.reload();
+      };
+    } else {
+      btn.textContent = "Login";
+      btn.onclick = () => window.location.href = "login.html";
+    }
+  }
+
+  // Delete Account button
+  const deleteBtn = document.getElementById("delete-account-btn");
+  if (!deleteBtn) return;
+
+  // User logged out
+  deleteBtn.style.display = currentUser ? "block" : "none";
+
+  // User logged in
+  deleteBtn.onclick = async () => {
+    if (!confirm("Are you sure? Your account will be permanently deleted.")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:3000/users/${currentUser.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        alert("Error deleting account.");
+        return;
+      }
+
+      localStorage.removeItem("currentUser");
+      alert("Your account has been deleted.");
+      window.location.href = "index.html";
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete account.");
+    }
+  };
 }
 
 // ---------- WEATHER ----------
@@ -114,13 +162,15 @@ function showSlides() {
     setTimeout(showSlides, 5000);
 }
 
-document.addEventListener("DOMContentLoaded", showSlides);
-
 // ---------- Init function for pages ----------
 function initPage() {
   initDrawer();
   refreshGNBUser();
 }
 
-// run on DOM ready
-document.addEventListener('DOMContentLoaded', initPage);
+// ---------- INIT ----------
+document.addEventListener("DOMContentLoaded", () => {
+  initDrawer();
+  refreshGNBUser();
+  showSlides();
+});

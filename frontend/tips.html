@@ -8,28 +8,30 @@
 </head>
 <body>
 
+<!-- GNB HEADER -->
 <header class="gnb">
   <div class="left">
     <button id="hamburger-btn" class="hamburger">☰</button>
-    <div class="brand"><a href="index.html" style="color:inherit;text-decoration:none">TravelPlanner</a></div>
+    <div class="brand"><a href="index.html" style="color:inherit;text-decoration:none">Trip Planner</a></div>
   </div>
   <div class="right">
     <div id="gnb-user" style="margin-right:12px"></div>
-    <button id="gnb-login" class="btn btn-small" onclick="window.location.href='login.html'">Login</button>
+    <button id="auth-btn" class="btn btn-small" onclick="window.location.href='login.html'">Login</button>
   </div>
 </header>
 
+<!-- GNB MENU DRAWER -->
 <aside id="drawer" class="drawer" aria-hidden="true">
   <button id="drawer-close" class="close-btn">✕</button>
   <h3 style="margin-top:8px">Menu</h3>
   <nav>
     <a href="index.html">Home</a>
     <a href="tips.html">Tips</a>
-    <a href="signup.html">Sign Up</a>
-    <a href="login.html">Log In</a>
-    <a href="scheduler.html">Scheduler</a>
+    <a href="schedule-list.html">My Schedule List</a>
+    <a href="scheduler.html">New Schedule</a>
   </nav>
   <div style="margin-top:20px;color:var(--muted);font-size:14px">Logged in as: <span id="drawer-user">—</span></div>
+  <button id="delete-account-btn" class="delete-btn">Delete Account</button>
 </aside>
 
 <div class="container">
@@ -94,11 +96,11 @@
     </div>
   </div>
 
-  <div class="footer">© CocoaTeam</div>
+  <div class="footer">© Cocoa Team</div>
 </div>
 
-<script src="home.js"></script>
-<script src="chatbot.js"></script>
+<script src="js/home.js"></script>
+<script src="js/chatbot.js"></script>
 <script>
 function togglePanel(el){
   const panel = el.nextElementSibling;

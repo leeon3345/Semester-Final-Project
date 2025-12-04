@@ -123,6 +123,23 @@ body{
 .btn{background:var(--primary);color:white;padding:10px 14px;border:none;border-radius:10px;cursor:pointer;font-weight:700}
 .btn.ghost{background:transparent;color:var(--primary);border:2px solid rgba(255,255,255,0.12)}
 
+/* Delete Account */
+.delete-btn{
+  display: inline-block;
+  padding: 10px 10px;
+  border-radius: 8px;
+  margin-top:20px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  background: #0f2349;
+  color: white;
+}
+.delete-btn:hover {
+  background:#c8350d;
+}
+
 /* Tips accordion */
 .accordion { margin-top:20px }
 .accordion .item{margin-bottom:12px;border-radius:10px;overflow:hidden}
