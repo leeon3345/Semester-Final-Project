@@ -102,6 +102,10 @@
 
 /* --- 3. Add Attraction List --- */
 
+/* frontend/css/scheduler.css */
+
+/* --- 3. Add Attraction List --- */
+
 /* Wrap list items in a box */
 .modal-item {
     display: flex;
@@ -113,6 +117,16 @@
     margin-bottom: 10px;
     background-color: #fff;
     transition: box-shadow 0.2s;
+    
+    /* layout stability (Mac compatibility) */
+    overflow: hidden; 
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* internal text area can shrink */
+.modal-item > div {
+    min-width: 0; 
 }
 
 .modal-item:hover {

@@ -1,3 +1,5 @@
+// frontend/js/scheduler.js
+
 import { fetchData, checkAuthAndRedirect } from './api.js';
 
 // 1. Authentication Check
@@ -6,6 +8,10 @@ checkAuthAndRedirect();
 // State management
 let selectedAttractions = [];
 let allAttractions = [];
+
+// [edit feature] Check for id parameter in URL (determine edit mode)
+const urlParams = new URLSearchParams(window.location.search);
+const editScheduleId = urlParams.get('id'); // if value exists, edit mode
 
 // DOM Elements
 const modal = document.getElementById('attractionModal');
@@ -48,7 +54,7 @@ function renderSelectedAttractions() {
                 src="${imageUrl}" 
                 alt="${attraction.name}"
                 class="mini-card-img"
-                onerror="console.error('Image failed to load:', this.src); this.onerror=null; this.src='${DEFAULT_IMAGE}';"
+                onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';"
             >
             <div class="mini-card-content">
                 <h4>${attraction.name}</h4>
@@ -64,6 +70,7 @@ function renderSelectedAttractions() {
         scheduleListContainer.appendChild(card);
     });
 
+    // 이벤트 리스너 연결
     document.querySelectorAll('.remove-btn').forEach(button => {
         button.addEventListener('click', handleRemoveAttraction);
     });
@@ -102,6 +109,7 @@ async function fetchAttractions() {
     }
 }
 
+// [improved] Apply styles to prevent layout break on Mac
 function renderAttractionsInModal(attractions) {
     attractionsList.innerHTML = '';
     
@@ -116,16 +124,19 @@ function renderAttractionsInModal(attractions) {
         item.className = 'modal-item';
         const imageUrl = attraction.image || DEFAULT_IMAGE;
         
+        // Inline styles: min-width:0, overflow:hidden, etc. to enforce layout stability
         item.innerHTML = `
-            <div style="display:flex; align-items:center; gap:12px; flex:1;">
+            <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
                 <img 
                     src="${imageUrl}" 
                     alt="${attraction.name}"
-                    onerror="console.error('Modal image failed:', this.src); this.onerror=null; this.src='${DEFAULT_IMAGE}';"
+                    onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';"
                     style="width:60px; height:60px; object-fit:cover; border-radius:6px; display:block; flex-shrink:0;"
                 >
-                <div style="flex:1;">
-                    <div style="font-weight:600; margin-bottom:4px;">${attraction.name}</div>
+                <div style="flex:1; overflow:hidden;">
+                    <div style="font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${attraction.name}
+                    </div>
                     <div style="font-size:14px; color:#666;">Cost: ${attraction.cost.toFixed(2)}</div>
                 </div>
             </div>
@@ -152,7 +163,9 @@ function handleAddAttraction(event) {
     if (attractionToAdd && !selectedAttractions.some(a => a.id === id)) {
         selectedAttractions.push(attractionToAdd);
         renderSelectedAttractions();
-        renderAttractionsInModal(allAttractions); 
+        if (modal.style.display === 'block') {
+            renderAttractionsInModal(allAttractions); 
+        }
     }
 }
 
@@ -165,8 +178,48 @@ function handleRemoveAttraction(event) {
     }
 }
 
-// --- 4. Save Logic (★ 403 & Session Error FIX) ---
+// --- 4. Load & Save Logic ---
 
+// [added] Date validation function 
+function validateDates() {
+    const startInput = document.getElementById('startDate');
+    const endInput = document.getElementById('endDate');
+    
+    // if Start Date is set, restrict End Date's minimum value to Start Date
+    if (startInput.value) {
+        endInput.min = startInput.value;
+    }
+
+    // if End Date is earlier than Start Date, alert and reset
+    if (startInput.value && endInput.value && endInput.value < startInput.value) {
+        alert("End Date cannot be earlier than Start Date.");
+        endInput.value = "";
+    }
+}
+
+// [added] Load existing schedule data if in edit mode 
+async function loadExistingSchedule(id) {
+    try {
+        const schedule = await fetchData(`/600/schedules/${id}`, { method: 'GET' });
+        
+        document.getElementById('tripTitle').value = schedule.title;
+        document.getElementById('startDate').value = schedule.startDate;
+        document.getElementById('endDate').value = schedule.endDate;
+
+        selectedAttractions = schedule.attractions || [];
+        renderSelectedAttractions();
+        
+        // button text change
+        saveScheduleBtn.textContent = 'Update Schedule';
+        
+    } catch (error) {
+        console.error("Failed to load schedule:", error);
+        alert("Error loading schedule data. It may have been deleted.");
+        window.location.href = 'schedule-list.html';
+    }
+}
+
+// [modified] Save and update logic (POST / PUT branching)
 async function handleSaveSchedule() {
     const tripTitle = document.getElementById('tripTitle').value;
     const startDate = document.getElementById('startDate').value;
@@ -177,62 +230,35 @@ async function handleSaveSchedule() {
         return;
     }
     
-    // ★ [핵심 수정] 유저 정보를 찾기 위해 여러 키를 다 뒤져봅니다.
+    // find user ID (search through multiple keys)
     let userId = null;
-    const potentialKeys = ['user', 'currentUser', 'userInfo', 'auth']; // 가능한 이름들
-
+    const potentialKeys = ['user', 'currentUser', 'userInfo', 'auth'];
     try {
-        // 1. 순서대로 localStorage를 뒤져서 ID를 찾음
         for (const key of potentialKeys) {
             const stored = localStorage.getItem(key);
             if (stored) {
                 const parsed = JSON.parse(stored);
                 if (parsed.id) {
                     userId = parsed.id;
-                    console.log(`Found User ID (${userId}) in key: "${key}"`);
                     break;
                 }
             }
         }
-        
-        // 2. 만약 그래도 못 찾았다면? (토큰만 있는 경우 등)
-        if (!userId) {
-            console.warn("User object not found in localStorage. Checking for token...");
-            const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
-            // 토큰만 있고 유저 정보가 없으면, 일단 임시로 ID 1번을 부여해서 저장이라도 되게 함 (테스트용)
-            if (token) {
-                console.warn("Token exists but user details missing. Defaulting to User ID 1 for testing.");
-                userId = 1; 
-            }
+        // if token exists but no ID, temporarily assign 1 (Fallback)
+        if (!userId && localStorage.getItem('authToken')) {
+            userId = 1; 
         }
+    } catch (e) { console.error(e); }
 
-    } catch (e) {
-        console.error("Error parsing user info:", e);
-    }
-
-    // 3. 최후의 수단: ID가 없으면 경고
     if (!userId) {
-        alert("Session Error: Could not find logged-in user info. Please Login again.");
-        // 디버깅을 위해 콘솔에 현재 저장된 키 목록을 띄워줌
-        console.log("Current LocalStorage Keys:", Object.keys(localStorage));
+        alert("Session Error: Please Login again.");
         return;
     }
 
-    // --- 이후 로직은 동일 ---
-    
     try {
-        // 스케줄 제한 체크 (에러나면 무시하고 저장 진행)
-        try {
-           const allUserSchedules = await fetchData(`/600/users/${userId}/schedules`, { method: 'GET' });
-           if (allUserSchedules.length >= 200) {
-               alert(`Limit reached.`); return;
-           }
-        } catch(ignore) {}
-
         const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
-
         const scheduleData = {
-            userId: userId, // 찾은 ID 사용
+            userId: parseInt(userId),
             title: tripTitle,
             startDate: startDate,
             endDate: endDate,
@@ -243,12 +269,22 @@ async function handleSaveSchedule() {
         saveScheduleBtn.disabled = true;
         saveScheduleBtn.textContent = 'Saving...';
 
-        await fetchData('/600/schedules', {
-            method: 'POST',
-            body: JSON.stringify(scheduleData)
-        });
+        if (editScheduleId) {
+            // if editing, PUT request (update existing data)
+            await fetchData(`/600/schedules/${editScheduleId}`, {
+                method: 'PUT',
+                body: JSON.stringify(scheduleData)
+            });
+            alert('Schedule updated successfully!');
+        } else {
+            // if creating new schedule, POST request
+            await fetchData('/600/schedules', {
+                method: 'POST',
+                body: JSON.stringify(scheduleData)
+            });
+            alert('Schedule created successfully!');
+        }
 
-        alert('Schedule saved successfully!');
         window.location.href = 'schedule-list.html';
         
     } catch (error) {
@@ -256,13 +292,20 @@ async function handleSaveSchedule() {
         console.error(error);
     } finally {
         saveScheduleBtn.disabled = false;
-        saveScheduleBtn.textContent = '💾 Save Schedule';
+        saveScheduleBtn.textContent = editScheduleId ? 'Update Schedule' : 'Save Schedule';
     }
 }
 
 // --- 5. Event Listeners ---
 
 document.addEventListener('DOMContentLoaded', () => {
+    // date validation bindings
+    const startInput = document.getElementById('startDate');
+    const endInput = document.getElementById('endDate');
+    startInput.addEventListener('change', validateDates);
+    endInput.addEventListener('change', validateDates);
+
+    // button event bindings
     document.getElementById('addAttractionBtn').addEventListener('click', () => {
         modal.style.display = 'block';
         if (allAttractions.length === 0) fetchAttractions(); 
@@ -289,5 +332,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     saveScheduleBtn.addEventListener('click', handleSaveSchedule);
-    renderSelectedAttractions(); 
+    
+    // if modifying, load existing schedule data
+    if (editScheduleId) {
+        const headerTitle = document.querySelector('header h1');
+        if(headerTitle) headerTitle.textContent = "Edit Schedule";
+        loadExistingSchedule(editScheduleId);
+    } else {
+        renderSelectedAttractions(); 
+    }
 });
