@@ -1,0 +1,74 @@
+/* ---------- GLOBAL RESET ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(to bottom right, #e5ebff, #c9d5ff);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ---------- COLORS ---------- */
+:root {
+    --primary: #2c55e0;          
+    --primary-dark: #1f3fb3;     
+    --text-dark: #1a1a1a;
+    --text-light: #777;
+    --white: #ffffff;
+    --border: #c8cce0;           
+}
+
+/* ---------- BUTTONS ---------- */
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+/* ---------- INPUT FIELDS ---------- */
+.input-group {
+    margin-bottom: 16px;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: #f8f9ff;
+    font-size: 15px;
+    transition: 0.2s ease;
+}
+
+input:focus {
+    border-color: var(--primary);
+    outline: none;
+    background: #ffffff;
+}
+
+/* ---------- TEXT LINKS ---------- */
+a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
