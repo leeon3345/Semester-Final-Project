@@ -1,26 +1,63 @@
+// js/home.js
+
 import { clearAuthAndRedirect } from "./api.js";
 
-// ---------- GNB MENU ----------
+// ---------- USER INFO HELPER ----------
+function getLoggedInUser() {
+  const possibleKeys = ['user', 'currentUser', 'userInfo', 'auth'];
+  for (const key of possibleKeys) {
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.username) return parsed;
+        if (parsed.email) return { ...parsed, username: parsed.email.split('@')[0] };
+        if (parsed.name) return { ...parsed, username: parsed.name };
+      } catch (e) {}
+    }
+  }
+  return null;
+}
+
+function getAuthToken() {
+  return localStorage.getItem('token') || localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+}
+
+// ---------- GNB MENU (Drawer) ----------
 function initDrawer() {
   const ham = document.getElementById('hamburger-btn');
   const drawer = document.getElementById('drawer');
   const drawerClose = document.getElementById('drawer-close');
 
-  if (ham) ham.addEventListener('click', ()=> drawer.classList.add('open'));
-  if (drawerClose) drawerClose.addEventListener('click', ()=> drawer.classList.remove('open'));
+  if (ham && drawer) ham.addEventListener('click', () => {
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+  });
+  
+  if (drawerClose && drawer) drawerClose.addEventListener('click', () => {
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+  });
 
   // Close drawer when clicking outside
-  document.addEventListener('click', (e)=>{
-    if (!drawer) return;
-    const inside = drawer.contains(e.target) || (ham && ham.contains(e.target));
-    if (!inside) drawer.classList.remove('open');
+  document.addEventListener('click', (e) => {
+    if (!drawer || !ham) return;
+    if (!drawer.classList.contains('open')) return;
+    
+    const insideDrawer = drawer.contains(e.target);
+    const clickedHam = ham.contains(e.target);
+    
+    if (!insideDrawer && !clickedHam) {
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+    }
   });
 
   // Add auth check for protected menu links
-  const protectedLinks = drawer.querySelectorAll('a[href="schedule-list.html"], a[href="scheduler.html"]');
+  const protectedLinks = drawer ? drawer.querySelectorAll('a[href="schedule-list.html"], a[href="scheduler.html"]') : [];
   protectedLinks.forEach(link => {
     link.addEventListener('click', (e) => {
-      const authToken = localStorage.getItem('authToken');
+      const authToken = getAuthToken(); // Use the improved token retrieval function
       if (!authToken) {
         e.preventDefault();
         alert('Please log in to access this page.');
@@ -32,18 +69,26 @@ function initDrawer() {
 
 // ---------- GNB HEADER ----------
 function refreshGNBUser() {
-  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-  const authToken = localStorage.getItem('authToken');
+  // ★ Use the improved user info retrieval function
+  const currentUser = getLoggedInUser();
+  const authToken = getAuthToken();
   const userSpan = document.getElementById('gnb-user');
+  const drawerUser = document.getElementById('drawer-user'); // 드로어 안의 유저 이름도 처리
 
+  // GNB user greeting
   if (userSpan) {
     userSpan.textContent = currentUser ? `Hello, ${currentUser.username}` : '';
+  }
+  
+  //drawer user name
+  if (drawerUser) {
+    drawerUser.textContent = currentUser ? currentUser.username : 'Guest';
   }
 
   // Login / Logout button
   const btn = document.getElementById("auth-btn");
   if (btn) {
-    if (currentUser && authToken) {
+    if (authToken) { 
       btn.textContent = "Logout";
       btn.onclick = () => {
         clearAuthAndRedirect();
@@ -59,32 +104,34 @@ function refreshGNBUser() {
 
   // Delete Account button
   const deleteBtn = document.getElementById("delete-account-btn");
-  if (!deleteBtn) return;
-
-  deleteBtn.style.display = (currentUser && authToken) ? "block" : "none";
-
-  deleteBtn.onclick = async () => {
-    if (!confirm("Are you sure? Your account will be permanently deleted.")) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`http://localhost:3000/users/${currentUser.id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        alert("Error deleting account.");
-        return;
+  if (deleteBtn) {
+    deleteBtn.style.display = (currentUser && authToken) ? "block" : "none";
+    
+  
+    deleteBtn.onclick = async () => {
+      if (!currentUser || !currentUser.id) {
+          alert("User info error."); return;
       }
+      if (!confirm("Are you sure? Your account will be permanently deleted.")) return;
 
-      clearAuthAndRedirect();
-      alert("Your account has been deleted.");
-    } catch (error) {
-      console.error(error);
-      alert("Failed to delete account.");
-    }
-  };
+      try {
+        const res = await fetch(`http://localhost:3000/users/${currentUser.id}`, {
+          method: "DELETE",
+        });
+
+        if (!res.ok) {
+          alert("Error deleting account.");
+          return;
+        }
+
+        clearAuthAndRedirect();
+        alert("Your account has been deleted.");
+      } catch (error) {
+        console.error(error);
+        alert("Failed to delete account.");
+      }
+    };
+  }
 }
 
 // Update drawer menu items based on authentication
@@ -96,14 +143,12 @@ function updateDrawerMenuAuth(isLoggedIn) {
   protectedLinks.forEach(link => {
     if (!isLoggedIn) {
       link.style.opacity = '0.5';
-      link.style.pointerEvents = 'none';
+    //   link.style.pointerEvents = 'none'; // prevent clicks
       link.style.cursor = 'not-allowed';
-      link.title = 'Please log in to access this page';
     } else {
       link.style.opacity = '1';
       link.style.pointerEvents = 'auto';
       link.style.cursor = 'pointer';
-      link.title = '';
     }
   });
 }
@@ -143,15 +188,15 @@ async function fetchAndRenderWeather(city='Bangkok') {
     if (!j.current_weather) throw new Error('No current weather');
 
     const w = j.current_weather;
-    iconEl.textContent = getWeatherIcon(w.weathercode);
+    if(iconEl) iconEl.textContent = getWeatherIcon(w.weathercode);
     tempEl.textContent = `${Math.round(w.temperature)}°C`;
-    descEl.textContent = `Wind ${Math.round(w.windspeed)} km/h`;
-    updatedEl.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+    if(descEl) descEl.textContent = `Wind ${Math.round(w.windspeed)} km/h`;
+    if(updatedEl) updatedEl.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
   } catch (e) {
     tempEl.textContent = '—';
-    iconEl.textContent = '';
-    descEl.textContent = 'Unable to load weather';
-    updatedEl.textContent = '';
+    if(iconEl) iconEl.textContent = '';
+    if(descEl) descEl.textContent = 'Unable to load weather';
+    if(updatedEl) updatedEl.textContent = '';
     console.error(e);
   }
 }
@@ -183,7 +228,7 @@ let slideIndex = 0;
 
 function showSlides() {
     const slides = document.getElementsByClassName("mySlides");
-    if (slides.length === 0) return;
+    if (!slides || slides.length === 0) return;
 
     for (let i = 0; i < slides.length; i++) {
         slides[i].classList.remove("active");
@@ -202,15 +247,6 @@ function showSlides() {
 function initPage() {
   initDrawer();
   refreshGNBUser();
-  
-  // drawer user display
-  const drawerUser = document.getElementById('drawer-user');
-  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-  if (drawerUser) {
-    drawerUser.textContent = currentUser ? currentUser.username : '—';
-  }
-
-  // Weather initialization
   fetchAndRenderWeather('Bangkok');
 
   // Currency converter bindings
@@ -233,7 +269,7 @@ function initPage() {
       const tmp = fromSelect.value;
       fromSelect.value = toSelect.value;
       toSelect.value = tmp;
-      convertBtn.click();
+      if(convertBtn) convertBtn.click();
     });
   }
 }
@@ -244,7 +280,4 @@ document.addEventListener("DOMContentLoaded", () => {
   showSlides();
 });
 
-// Export functions for global access if needed
 window.initPage = initPage;
-window.fetchAndRenderWeather = fetchAndRenderWeather;
-window.convertCurrency = convertCurrency;
