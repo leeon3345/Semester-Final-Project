@@ -1,0 +1,43 @@
+/* ---------- AUTH CONTAINER---------- */
+.auth-container {
+    width: 100%;
+    max-width: 380px;
+    padding: 40px 32px;
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.4s ease;
+}
+
+/* ---------- HEADINGS ---------- */
+.auth-container h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 26px;
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+/* ---------- SWITCH MESSAGE ---------- */
+.switch-msg {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.switch-msg a {
+    font-weight: 600;
+}
+
+/* ---------- ANIMATION ---------- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
