@@ -18,6 +18,24 @@
       ],
       "userId": 1,
       "id": 1
+    },
+    {
+      "userId": 1,
+      "title": "test",
+      "startDate": "2025-12-05",
+      "endDate": "2025-12-17",
+      "attractions": [
+        {
+          "id": 1,
+          "name": "The Grand Palace",
+          "category": "history",
+          "cost": 20000,
+          "desc": "The official residence of the Kings of Siam.",
+          "image": "https://plus.unsplash.com/premium_photo-1661963643503-b3a890845475?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        }
+      ],
+      "totalCost": 20000,
+      "id": 2
     }
   ],
   "attractions": [
@@ -75,7 +93,7 @@
       "category": "view",
       "cost": 35000,
       "desc": "Thailand's highest observation deck with a glass floor.",
-    "image":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSE68q7AMWALB9-ZKcq3onUJdMgaS2Q1TLodQ&s"
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSE68q7AMWALB9-ZKcq3onUJdMgaS2Q1TLodQ&s"
     },
     {
       "id": 8,

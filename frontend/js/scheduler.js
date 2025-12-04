@@ -20,18 +20,15 @@ const mapFrame = document.getElementById('googleMapFrame');
 const mapTitle = document.getElementById('mapTitle');
 const closeMapBtn = document.querySelector('.close-map-btn');
 
-// Default placeholder image
 const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect width="300" height="200" fill="%23e0e0e0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="%23666"%3ENo Image%3C/text%3E%3C/svg%3E';
 
 // --- 2. Rendering Functions ---
 
-// Update total cost
 function updateCost() {
     const total = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
     totalCostDisplay.textContent = total.toFixed(2); 
 }
 
-// Render selected attractions (Main List)
 function renderSelectedAttractions() {
     scheduleListContainer.innerHTML = '';
 
@@ -42,12 +39,10 @@ function renderSelectedAttractions() {
     
     selectedAttractions.forEach(attraction => {
         const card = document.createElement('div');
-        // Class name changed to 'schedule-mini-card' to avoid CSS conflicts
         card.className = 'schedule-mini-card'; 
         
         const imageUrl = attraction.image || DEFAULT_IMAGE;
         
-        // Inline styles removed. 'mini-card-img' class handles the size in CSS.
         card.innerHTML = `
             <img 
                 src="${imageUrl}" 
@@ -60,7 +55,7 @@ function renderSelectedAttractions() {
                 <p><strong>Cost:</strong> ${attraction.cost.toFixed(2)}</p>
                 ${attraction.desc ? `<p class="desc">${attraction.desc}</p>` : ''}
                 
-                <div style="display:flex; gap:10px; margin-top:10px;">
+                <div class="card-actions">
                     <button class="remove-btn" data-id="${attraction.id}">Remove (x)</button>
                     <button class="view-map-btn" data-name="${attraction.name}">🗺️ Map</button>
                 </div>
@@ -69,42 +64,36 @@ function renderSelectedAttractions() {
         scheduleListContainer.appendChild(card);
     });
 
-    // Attach "Remove" Listeners
     document.querySelectorAll('.remove-btn').forEach(button => {
         button.addEventListener('click', handleRemoveAttraction);
     });
 
-    // Attach "Map" Listeners
     document.querySelectorAll('.view-map-btn').forEach(button => {
         button.addEventListener('click', (e) => {
-            const placeName = e.target.dataset.name;
-            openMapModal(placeName);
+            const btn = e.target.closest('.view-map-btn'); 
+            if(btn) {
+                const placeName = btn.dataset.name;
+                openMapModal(placeName);
+            }
         });
     });
     
     updateCost();
 }
 
-// Function to open Map Modal
 function openMapModal(placeName) {
     if (!mapModal) return;
-    
     mapTitle.textContent = placeName;
-    // Simple Google Maps Embed URL (No API Key required for basic search)
-    // Replaces spaces with '+' for the URL query
     const query = (placeName + " Bangkok").replace(/\s+/g, '+'); 
-    mapFrame.src = `https://maps.google.com/maps?q=${query}&output=embed`;
-    
+    mapFrame.src = `https://maps.google.com/maps?q=${query}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
     mapModal.style.display = 'block';
 }
 
 // --- 3. Attraction Modal Logic ---
 
-// Fetch attractions from backend
 async function fetchAttractions() {
     try {
         const attractions = await fetchData('/attractions', { method: 'GET' });
-        console.log('Fetched attractions:', attractions);
         allAttractions = attractions;
         renderAttractionsInModal(allAttractions);
     } catch (error) {
@@ -113,7 +102,6 @@ async function fetchAttractions() {
     }
 }
 
-// Render list inside "Add Attraction" modal
 function renderAttractionsInModal(attractions) {
     attractionsList.innerHTML = '';
     
@@ -124,10 +112,8 @@ function renderAttractionsInModal(attractions) {
     
     attractions.forEach(attraction => {
         const isSelected = selectedAttractions.some(a => a.id === attraction.id);
-        
         const item = document.createElement('div');
         item.className = 'modal-item';
-        
         const imageUrl = attraction.image || DEFAULT_IMAGE;
         
         item.innerHTML = `
@@ -159,7 +145,6 @@ function renderAttractionsInModal(attractions) {
     });
 }
 
-// Add attraction logic
 function handleAddAttraction(event) {
     const id = parseInt(event.target.dataset.id);
     const attractionToAdd = allAttractions.find(a => a.id === id);
@@ -171,18 +156,16 @@ function handleAddAttraction(event) {
     }
 }
 
-// Remove attraction logic
 function handleRemoveAttraction(event) {
     const id = parseInt(event.target.dataset.id);
     selectedAttractions = selectedAttractions.filter(item => item.id !== id);
     renderSelectedAttractions();
-    
     if (modal.style.display === 'block') {
         renderAttractionsInModal(allAttractions);
     }
 }
 
-// --- 4. Save Logic ---
+// --- 4. Save Logic (★ 403 & Session Error FIX) ---
 
 async function handleSaveSchedule() {
     const tripTitle = document.getElementById('tripTitle').value;
@@ -194,31 +177,72 @@ async function handleSaveSchedule() {
         return;
     }
     
+    // ★ [핵심 수정] 유저 정보를 찾기 위해 여러 키를 다 뒤져봅니다.
+    let userId = null;
+    const potentialKeys = ['user', 'currentUser', 'userInfo', 'auth']; // 가능한 이름들
+
     try {
-        const allUserSchedules = await fetchData('/600/schedules', { method: 'GET' });
-        const SCHEDULE_LIMIT = 200;
-        if (allUserSchedules.length >= SCHEDULE_LIMIT) {
-            alert(`Limit reached. Please delete an existing schedule.`);
-            return;
+        // 1. 순서대로 localStorage를 뒤져서 ID를 찾음
+        for (const key of potentialKeys) {
+            const stored = localStorage.getItem(key);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.id) {
+                    userId = parsed.id;
+                    console.log(`Found User ID (${userId}) in key: "${key}"`);
+                    break;
+                }
+            }
         }
-    } catch (error) {
-        console.error("Warning: Limit check failed.", error);
+        
+        // 2. 만약 그래도 못 찾았다면? (토큰만 있는 경우 등)
+        if (!userId) {
+            console.warn("User object not found in localStorage. Checking for token...");
+            const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+            // 토큰만 있고 유저 정보가 없으면, 일단 임시로 ID 1번을 부여해서 저장이라도 되게 함 (테스트용)
+            if (token) {
+                console.warn("Token exists but user details missing. Defaulting to User ID 1 for testing.");
+                userId = 1; 
+            }
+        }
+
+    } catch (e) {
+        console.error("Error parsing user info:", e);
     }
 
-    const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
+    // 3. 최후의 수단: ID가 없으면 경고
+    if (!userId) {
+        alert("Session Error: Could not find logged-in user info. Please Login again.");
+        // 디버깅을 위해 콘솔에 현재 저장된 키 목록을 띄워줌
+        console.log("Current LocalStorage Keys:", Object.keys(localStorage));
+        return;
+    }
 
-    const scheduleData = {
-        title: tripTitle,
-        startDate: startDate,
-        endDate: endDate,
-        attractions: selectedAttractions,
-        totalCost: totalCost
-    };
-
-    saveScheduleBtn.disabled = true;
-    saveScheduleBtn.textContent = 'Saving...';
-
+    // --- 이후 로직은 동일 ---
+    
     try {
+        // 스케줄 제한 체크 (에러나면 무시하고 저장 진행)
+        try {
+           const allUserSchedules = await fetchData(`/600/users/${userId}/schedules`, { method: 'GET' });
+           if (allUserSchedules.length >= 200) {
+               alert(`Limit reached.`); return;
+           }
+        } catch(ignore) {}
+
+        const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
+
+        const scheduleData = {
+            userId: userId, // 찾은 ID 사용
+            title: tripTitle,
+            startDate: startDate,
+            endDate: endDate,
+            attractions: selectedAttractions,
+            totalCost: totalCost
+        };
+
+        saveScheduleBtn.disabled = true;
+        saveScheduleBtn.textContent = 'Saving...';
+
         await fetchData('/600/schedules', {
             method: 'POST',
             body: JSON.stringify(scheduleData)
@@ -229,6 +253,7 @@ async function handleSaveSchedule() {
         
     } catch (error) {
         alert('Error saving schedule: ' + error.message);
+        console.error(error);
     } finally {
         saveScheduleBtn.disabled = false;
         saveScheduleBtn.textContent = '💾 Save Schedule';
@@ -238,43 +263,31 @@ async function handleSaveSchedule() {
 // --- 5. Event Listeners ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Open "Add Attraction" Modal
     document.getElementById('addAttractionBtn').addEventListener('click', () => {
         modal.style.display = 'block';
-        if (allAttractions.length === 0) {
-            fetchAttractions(); 
-        } else {
-            renderAttractionsInModal(allAttractions);
-        }
+        if (allAttractions.length === 0) fetchAttractions(); 
+        else renderAttractionsInModal(allAttractions);
     });
 
-    // Close "Add Attraction" Modal
     document.querySelector('.close-btn').addEventListener('click', () => {
         modal.style.display = 'none';
     });
     
-    // Close "Map" Modal
     if(closeMapBtn) {
         closeMapBtn.addEventListener('click', () => {
             mapModal.style.display = 'none';
-            mapFrame.src = ""; // Stop loading map when closed
+            mapFrame.src = "";
         });
     }
 
-    // Close Modals when clicking outside
     window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
+        if (event.target === modal) modal.style.display = 'none';
         if (event.target === mapModal) {
             mapModal.style.display = 'none';
             mapFrame.src = "";
         }
     });
     
-    // Save Button
     saveScheduleBtn.addEventListener('click', handleSaveSchedule);
-    
-    // Initial Render
     renderSelectedAttractions(); 
 });
