@@ -1,74 +1,110 @@
-// js/scheduler.js
 import { fetchData, checkAuthAndRedirect } from './api.js';
 
 // 1. Authentication Check
 checkAuthAndRedirect();
 
-// State management arrays
+// State management
 let selectedAttractions = [];
-let allAttractions = []; // Stores all fetched attractions once
+let allAttractions = [];
 
-// DOM References
+// DOM Elements
 const modal = document.getElementById('attractionModal');
 const attractionsList = document.getElementById('attractionsList');
 const scheduleListContainer = document.getElementById('scheduleListContainer');
 const totalCostDisplay = document.getElementById('totalCostDisplay');
 const saveScheduleBtn = document.getElementById('saveScheduleBtn');
 
+// Map Modal Elements
+const mapModal = document.getElementById('mapModal');
+const mapFrame = document.getElementById('googleMapFrame');
+const mapTitle = document.getElementById('mapTitle');
+const closeMapBtn = document.querySelector('.close-map-btn');
 
-// --- 2. Rendering and Calculation Functions ---
+// Default placeholder image
+const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect width="300" height="200" fill="%23e0e0e0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="%23666"%3ENo Image%3C/text%3E%3C/svg%3E';
 
-/**
- * Recalculates and updates the total cost in the DOM.
- */
+// --- 2. Rendering Functions ---
+
+// Update total cost
 function updateCost() {
-    // Calculate sum of 'cost' property for all selected attractions
     const total = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
     totalCostDisplay.textContent = total.toFixed(2); 
 }
 
-/**
- * Renders the list of selected attractions as cards on the main screen.
- */
+// Render selected attractions (Main List)
 function renderSelectedAttractions() {
     scheduleListContainer.innerHTML = '';
 
     if (selectedAttractions.length === 0) {
         scheduleListContainer.innerHTML = '<p class="info-msg">No attractions added yet. Use the "Add Attraction" button!</p>';
+        return;
     }
     
     selectedAttractions.forEach(attraction => {
         const card = document.createElement('div');
-        card.className = 'attraction-card';
+        // Class name changed to 'schedule-mini-card' to avoid CSS conflicts
+        card.className = 'schedule-mini-card'; 
+        
+        const imageUrl = attraction.image || DEFAULT_IMAGE;
+        
+        // Inline styles removed. 'mini-card-img' class handles the size in CSS.
         card.innerHTML = `
-            <img src="${attraction.image}" alt="${attraction.name}">
-            <div class="card-content">
+            <img 
+                src="${imageUrl}" 
+                alt="${attraction.name}"
+                class="mini-card-img"
+                onerror="console.error('Image failed to load:', this.src); this.onerror=null; this.src='${DEFAULT_IMAGE}';"
+            >
+            <div class="mini-card-content">
                 <h4>${attraction.name}</h4>
-                <p>Cost: $${attraction.cost.toFixed(2)}</p>
-                <button class="remove-btn" data-id="${attraction.id}">Remove (x)</button>
+                <p><strong>Cost:</strong> ${attraction.cost.toFixed(2)}</p>
+                ${attraction.desc ? `<p class="desc">${attraction.desc}</p>` : ''}
+                
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="remove-btn" data-id="${attraction.id}">Remove (x)</button>
+                    <button class="view-map-btn" data-name="${attraction.name}">🗺️ Map</button>
+                </div>
             </div>
         `;
         scheduleListContainer.appendChild(card);
     });
 
-    // Attach event listeners to the new remove buttons
+    // Attach "Remove" Listeners
     document.querySelectorAll('.remove-btn').forEach(button => {
         button.addEventListener('click', handleRemoveAttraction);
+    });
+
+    // Attach "Map" Listeners
+    document.querySelectorAll('.view-map-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const placeName = e.target.dataset.name;
+            openMapModal(placeName);
+        });
     });
     
     updateCost();
 }
 
+// Function to open Map Modal
+function openMapModal(placeName) {
+    if (!mapModal) return;
+    
+    mapTitle.textContent = placeName;
+    // Simple Google Maps Embed URL (No API Key required for basic search)
+    // Replaces spaces with '+' for the URL query
+    const query = (placeName + " Bangkok").replace(/\s+/g, '+'); 
+    mapFrame.src = `https://maps.google.com/maps?q=${query}&output=embed`;
+    
+    mapModal.style.display = 'block';
+}
 
-// --- 3. Modal and Attraction Logic ---
+// --- 3. Attraction Modal Logic ---
 
-/**
- * Fetches the list of attractions from the backend.
- */
+// Fetch attractions from backend
 async function fetchAttractions() {
     try {
-        // GET /attractions
         const attractions = await fetchData('/attractions', { method: 'GET' });
+        console.log('Fetched attractions:', attractions);
         allAttractions = attractions;
         renderAttractionsInModal(allAttractions);
     } catch (error) {
@@ -77,116 +113,112 @@ async function fetchAttractions() {
     }
 }
 
-/**
- * Renders the attraction list inside the modal popup.
- */
+// Render list inside "Add Attraction" modal
 function renderAttractionsInModal(attractions) {
     attractionsList.innerHTML = '';
+    
+    if (attractions.length === 0) {
+        attractionsList.innerHTML = '<p class="info-msg">No attractions available.</p>';
+        return;
+    }
+    
     attractions.forEach(attraction => {
-        // Check if the attraction is already selected
         const isSelected = selectedAttractions.some(a => a.id === attraction.id);
         
         const item = document.createElement('div');
         item.className = 'modal-item';
+        
+        const imageUrl = attraction.image || DEFAULT_IMAGE;
+        
         item.innerHTML = `
-            <span>${attraction.name} (Cost: $${attraction.cost.toFixed(2)})</span>
-            <button class="select-btn ${isSelected ? 'selected' : ''}" data-id="${attraction.id}" ${isSelected ? 'disabled' : ''}>
+            <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                <img 
+                    src="${imageUrl}" 
+                    alt="${attraction.name}"
+                    onerror="console.error('Modal image failed:', this.src); this.onerror=null; this.src='${DEFAULT_IMAGE}';"
+                    style="width:60px; height:60px; object-fit:cover; border-radius:6px; display:block; flex-shrink:0;"
+                >
+                <div style="flex:1;">
+                    <div style="font-weight:600; margin-bottom:4px;">${attraction.name}</div>
+                    <div style="font-size:14px; color:#666;">Cost: ${attraction.cost.toFixed(2)}</div>
+                </div>
+            </div>
+            <button 
+                class="select-btn ${isSelected ? 'selected' : ''}" 
+                data-id="${attraction.id}" 
+                ${isSelected ? 'disabled' : ''}
+            >
                 ${isSelected ? 'Added' : 'Add'}
             </button>
         `;
         attractionsList.appendChild(item);
     });
     
-    // Attach listeners only to active 'Add' buttons
     document.querySelectorAll('.select-btn:not(.selected)').forEach(button => {
         button.addEventListener('click', handleAddAttraction);
     });
 }
 
-
-/**
- * Handles adding an attraction from the modal list to the schedule.
- */
+// Add attraction logic
 function handleAddAttraction(event) {
     const id = parseInt(event.target.dataset.id);
     const attractionToAdd = allAttractions.find(a => a.id === id);
 
     if (attractionToAdd && !selectedAttractions.some(a => a.id === id)) {
         selectedAttractions.push(attractionToAdd);
-        renderSelectedAttractions(); // Update main view
-        
-        // Actualizamos la vista del modal para deshabilitar el botón recién agregado
+        renderSelectedAttractions();
         renderAttractionsInModal(allAttractions); 
     }
 }
 
-/**
- * Handles removing an attraction from the schedule list.
- */
+// Remove attraction logic
 function handleRemoveAttraction(event) {
     const id = parseInt(event.target.dataset.id);
-    // Filter out the attraction to create the new state
     selectedAttractions = selectedAttractions.filter(item => item.id !== id);
-    renderSelectedAttractions(); // Re-render the list and update cost
+    renderSelectedAttractions();
     
-    // If the modal is open, re-render it to update the button status
     if (modal.style.display === 'block') {
         renderAttractionsInModal(allAttractions);
     }
 }
 
+// --- 4. Save Logic ---
 
-/**
- * Handles saving the new schedule data to the backend.
- * Includes a check for the 200 itinerary limit requirement.
- */
 async function handleSaveSchedule() {
     const tripTitle = document.getElementById('tripTitle').value;
-    // ... (other input validations)
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
 
     if (!tripTitle || !startDate || !endDate || selectedAttractions.length === 0) {
         alert('Please fill in the Title, Dates, and select at least one attraction.');
         return;
     }
     
-    // --- START: 200 ITINERARY LIMIT CHECK (MEMO REQUIREMENT) ---
-    
     try {
-        // 1. Fetch ALL schedules for the current user. 
-        // We use the /600/schedules endpoint which is filtered by json-server-auth 
-        // to only return schedules belonging to the logged-in user.
         const allUserSchedules = await fetchData('/600/schedules', { method: 'GET' });
-        
-        // 2. Check the limit
         const SCHEDULE_LIMIT = 200;
         if (allUserSchedules.length >= SCHEDULE_LIMIT) {
-            // If the limit is reached, display the memo requirement and stop the save operation.
-            alert(`MEMO: Cannot save new schedule. The limit of ${SCHEDULE_LIMIT} itineraries has been reached. Please delete an existing schedule to create a new one.`);
-            return; // Stop execution here
+            alert(`Limit reached. Please delete an existing schedule.`);
+            return;
         }
-        
     } catch (error) {
-        // If fetching the count fails (e.g., server error), we should still log it 
-        // but proceed, as a server error shouldn't necessarily block saving.
-        // However, for strict compliance, we could block the save:
-        console.error("Warning: Could not check itinerary limit due to fetch error.", error);
-        // return; // Uncomment this if the memo requires blocking if the count cannot be verified.
+        console.error("Warning: Limit check failed.", error);
     }
-    
-    // --- END: 200 ITINERARY LIMIT CHECK ---
 
     const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
 
     const scheduleData = {
         title: tripTitle,
-        // ... (rest of scheduleData structure)
+        startDate: startDate,
+        endDate: endDate,
+        attractions: selectedAttractions,
+        totalCost: totalCost
     };
 
     saveScheduleBtn.disabled = true;
     saveScheduleBtn.textContent = 'Saving...';
 
     try {
-        // POST request to /600/schedules (requires Auth Token)
         await fetchData('/600/schedules', {
             method: 'POST',
             body: JSON.stringify(scheduleData)
@@ -197,41 +229,52 @@ async function handleSaveSchedule() {
         
     } catch (error) {
         alert('Error saving schedule: ' + error.message);
-        console.error('Save error:', error);
     } finally {
         saveScheduleBtn.disabled = false;
         saveScheduleBtn.textContent = '💾 Save Schedule';
     }
 }
 
-
-// --- 5. Initialization and Event Listeners ---
+// --- 5. Event Listeners ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 5a. "Add Attraction" button listener
+    // Open "Add Attraction" Modal
     document.getElementById('addAttractionBtn').addEventListener('click', () => {
         modal.style.display = 'block';
-        // Only fetch attractions if we haven't already
         if (allAttractions.length === 0) {
             fetchAttractions(); 
         } else {
-            renderAttractionsInModal(allAttractions); // Just render with updated selection status
+            renderAttractionsInModal(allAttractions);
         }
     });
 
-    // 5b. Close modal listeners (X button and click outside)
+    // Close "Add Attraction" Modal
     document.querySelector('.close-btn').addEventListener('click', () => {
         modal.style.display = 'none';
     });
+    
+    // Close "Map" Modal
+    if(closeMapBtn) {
+        closeMapBtn.addEventListener('click', () => {
+            mapModal.style.display = 'none';
+            mapFrame.src = ""; // Stop loading map when closed
+        });
+    }
+
+    // Close Modals when clicking outside
     window.addEventListener('click', (event) => {
         if (event.target === modal) {
             modal.style.display = 'none';
         }
+        if (event.target === mapModal) {
+            mapModal.style.display = 'none';
+            mapFrame.src = "";
+        }
     });
     
-    // 5c. "Save Schedule" listener
+    // Save Button
     saveScheduleBtn.addEventListener('click', handleSaveSchedule);
     
-    // Initial render
+    // Initial Render
     renderSelectedAttractions(); 
 });
