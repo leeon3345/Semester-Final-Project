@@ -99,14 +99,24 @@ async function handleRegister() {
 
 // Export functions to be globally accessible from HTML's onclick attributes
 window.handleLogin = handleLogin;
-window.handleRegister = handleRegister;
-window.clearAuthAndRedirect = clearAuthAndRedirect; // Para el botón de "Log Out"
+window.clearAuthAndRedirect = clearAuthAndRedirect; // For the "Log Out" button
 
-// --- Initial Check: Prevent logged-in users from seeing login/register pages ---
+// --- Event Listeners & Page Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Redirect logged-in users away from auth pages
     if (getAuthToken() && 
         (window.location.pathname.includes('login.html') || 
          window.location.pathname.includes('register.html'))) {
         window.location.href = 'schedule-list.html';
+        return; // Stop further script execution
+    }
+
+    // 2. Attach listener specifically for the registration form
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent default form submission (page reload)
+            handleRegister();       // Call the registration logic
+        });
     }
 });

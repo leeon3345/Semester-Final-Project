@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TravelPlanner — Tips</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+<!-- GNB HEADER -->
+<header class="gnb">
+  <div class="left">
+    <button id="hamburger-btn" class="hamburger">☰</button>
+    <div class="brand"><a href="index.html" style="color:inherit;text-decoration:none">Trip Planner</a></div>
+  </div>
+  <div class="right">
+    <div id="gnb-user" style="margin-right:12px"></div>
+    <button id="auth-btn" class="btn btn-small" onclick="window.location.href='login.html'">Login</button>
+  </div>
+</header>
+
+<!-- GNB MENU DRAWER -->
+<aside id="drawer" class="drawer" aria-hidden="true">
+  <button id="drawer-close" class="close-btn">✕</button>
+  <h3 style="margin-top:8px">Menu</h3>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="tips.html">Tips</a>
+    <a href="schedule-list.html">My Schedule List</a>
+    <a href="scheduler.html">New Schedule</a>
+  </nav>
+  <div style="margin-top:20px;color:var(--muted);font-size:14px">Logged in as: <span id="drawer-user">—</span></div>
+  <button id="delete-account-btn" class="delete-btn">Delete Account</button>
+</aside>
+
+<div class="container">
+  <h1>Travel Tips</h1>
+  <p class="muted">Tap any section to expand it.</p>
+
+  <div class="accordion">
+    <div class="item">
+      <div class="header" onclick="togglePanel(this)">Useful Apps</div>
+      <div class="panel">
+        <p>Grab, LINE, Google Maps, XE Currency, Agoda, AirVisual.</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="header" onclick="togglePanel(this)">Emergency Contacts</div>
+      <div class="panel">
+        <p>Police: 191 • Ambulance: 1669 • Fire: 199</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="header" onclick="togglePanel(this)">Cultural Etiquette</div>
+      <div class="panel">
+        <p>Remove shoes at temples/homes, avoid touching heads, dress modestly in religious sites.</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="header" onclick="togglePanel(this)">Payment</div>
+      <div class="panel">
+        <p>Cash for street vendors; cards in malls. Keep small bills for taxis.</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="header" onclick="togglePanel(this)">Where to Stay</div>
+      <div class="panel">
+        <p>Sukhumvit (nightlife), Siam (shopping), Old City (culture), Silom (business).</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="header" onclick="togglePanel(this)">Basic Phrases</div>
+      <div class="panel">
+        <p>Hello: Sawadee ka/krap • Thank you: Khob khun ka/krap • How much?: Tao rai?</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="header" onclick="togglePanel(this)">Transport</div>
+      <div class="panel">
+        <p>Use BTS/MRT for traffic-free travel; Grab for door-to-door; insist on meter in taxis.</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="header" onclick="togglePanel(this)">Common Scams</div>
+      <div class="panel">
+        <p>Tuk-tuk gem-shop detours, fake 'temple closed' trick, unmetered taxis overcharging.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© Cocoa Team</div>
+</div>
+
+<script src="js/home.js"></script>
+<script src="js/chatbot.js"></script>
+<script>
+function togglePanel(el){
+  const panel = el.nextElementSibling;
+  const open = panel.style.display === 'block';
+  // close others
+  document.querySelectorAll('.accordion .panel').forEach(p=>p.style.display='none');
+  if (!open) panel.style.display='block';
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  initPage && initPage();
+  document.getElementById('drawer-user').textContent = localStorage.getItem('username') || '—';
+});
+</script>
+</body>
+</html>

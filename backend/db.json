@@ -1,9 +1,10 @@
 {
   "users": [
     {
-      "id": 1, 
-      "email": "test@user.com",
-      "password": "password123"
+      "email": "test@naver.com",
+      "password": "$2a$10$q0I1Hv.eZ8qQ2NBZmRImeOSJl2IRxOAVNQCcS9os0vK13wb9lJnRm",
+      "username": "test",
+      "id": 1
     }
   ],
   "schedules": [],

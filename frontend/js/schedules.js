@@ -2,7 +2,7 @@
 import { fetchData, checkAuthAndRedirect, clearAuthAndRedirect } from './api.js';
 
 // 1. Authentication Check
-//checkAuthAndRedirect();
+checkAuthAndRedirect();
 
 const schedulesContainer = document.getElementById('schedulesContainer');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -46,8 +46,15 @@ async function loadSchedules() {
     schedulesContainer.innerHTML = '<p id="loading-msg">Loading your schedules...</p>';
     
     try {
-        // GET /600/schedules will filter results based on the logged-in user's token.
-        const schedules = await fetchData('/600/schedules', { method: 'GET' });
+        const userJson = localStorage.getItem('currentUser');
+        if (!userJson) {
+            throw new Error("User details not found. Please log in again.");
+        }
+        const user = JSON.parse(userJson);
+        const userId = user.id;
+
+        // Fetch schedules associated with the logged-in user
+        const schedules = await fetchData(`/users/${userId}/schedules`, { method: 'GET' });
         renderSchedules(schedules);
         
     } catch (error) {

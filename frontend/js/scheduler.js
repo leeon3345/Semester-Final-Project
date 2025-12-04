@@ -2,7 +2,7 @@
 import { fetchData, checkAuthAndRedirect } from './api.js';
 
 // 1. Authentication Check
-// checkAuthAndRedirect();
+checkAuthAndRedirect();
 
 // State management arrays
 let selectedAttractions = [];
@@ -148,6 +148,15 @@ async function handleSaveSchedule() {
         return;
     }
 
+    // Get user ID for ownership
+    const userJson = localStorage.getItem('currentUser');
+    if (!userJson) {
+        alert("Error: User not found. Please log in again.");
+        return;
+    }
+    const user = JSON.parse(userJson);
+    const userId = user.id;
+
     const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
 
     const scheduleData = {
@@ -155,15 +164,16 @@ async function handleSaveSchedule() {
         startDate: startDate,
         endDate: endDate,
         totalCost: totalCost,
-        attractions: selectedAttractions.map(a => a.id) 
+        attractions: selectedAttractions.map(a => a.id),
+        userId: userId // Add the owner's ID
     };
 
     saveScheduleBtn.disabled = true;
     saveScheduleBtn.textContent = 'Saving...';
 
     try {
-        // POST request to /600/schedules (requires Auth Token)
-        await fetchData('/600/schedules', {
+        // POST request to /schedules. The body now includes the required userId.
+        await fetchData('/schedules', {
             method: 'POST',
             body: JSON.stringify(scheduleData)
         });
