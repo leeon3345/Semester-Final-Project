@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<!-- GNB -->
+<!-- GNB HEADER -->
 <header class="gnb">
   <div class="left">
     <button id="hamburger-btn" class="hamburger">☰</button>
@@ -16,24 +16,22 @@
   </div>
   <div class="right">
     <div id="gnb-user" style="margin-right:12px"></div>
-    <button id="gnb-login" class="btn btn-small" onclick="window.location.href='login.html'">Login</button>
-    <span id="gnb-user"></span>
+    <button id="auth-btn" class="btn btn-small" onclick="window.location.href='login.html'">Login</button>
   </div>
 </header>
 
-<!-- Hamburger Menu Drawer -->
+<!-- GNB MENU DRAWER -->
 <aside id="drawer" class="drawer" aria-hidden="true">
   <button id="drawer-close" class="close-btn">✕</button>
   <h3 style="margin-top:8px">Menu</h3>
   <nav>
     <a href="index.html">Home</a>
     <a href="tips.html">Tips</a>
-    <a href="register.html">Sign Up</a>
-    <a href="login.html">Log In</a>
-    <a href="schedule-list.html">Schedule List</a>
+    <a href="schedule-list.html">My Schedule List</a>
     <a href="scheduler.html">New Schedule</a>
   </nav>
   <div style="margin-top:20px;color:var(--muted);font-size:14px">Logged in as: <span id="drawer-user">—</span></div>
+  <button id="delete-account-btn" class="delete-btn">Delete Account</button>
 </aside>
 
 <div class="container">
@@ -102,7 +100,7 @@
 
   </section>
 
-  <div class="footer">© Cocoa Team — Final Project</div>
+  <div class="footer">© Cocoa Team</div>
 </div>
 
 <script src="js/home.js"></script>
