@@ -7,7 +7,19 @@
       "id": 1
     }
   ],
-  "schedules": [],
+  "schedules": [
+    {
+      "title": "test",
+      "startDate": "2025-12-03",
+      "endDate": "2025-12-03",
+      "totalCost": 20000,
+      "attractions": [
+        1
+      ],
+      "userId": 1,
+      "id": 1
+    }
+  ],
   "attractions": [
     {
       "id": 1,
