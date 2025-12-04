@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create New Schedule</title>
     <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/scheduler.css"> </head>
+    <link rel="stylesheet" href="css/scheduler.css"> 
+</head>
 <body>
-    <header class="main-header">
-        <div class="header-buttons">
-            <button onclick="window.location.href='index.html'" class="btn-secondary">🏠 Home</button>
-            <button onclick="window.location.href='schedule-list.html'" class="btn-secondary">← Back to List</button>
+
+    <nav class="navigation-bar">
+        <h1 class="app-title">Travel Planner</h1>
+        
+        <div class="nav-links">
+            <button onclick="window.location.href='index.html'" class="btn-nav">🏠 Home</button>
+            <button onclick="window.location.href='schedule-list.html'" class="btn-nav">🗓️ My Schedules</button>
+            <button onclick="clearAuthAndRedirect()" class="btn-nav logout-btn">🚪 Logout</button>
         </div>
-        <h1>Travel Planner</h1>
+    </nav>
+    <header class="main-header">
+        <h1>Create New Schedule</h1>
     </header>
 
     <div class="container">
@@ -54,5 +61,6 @@
     </div>
 
     <script type="module" src="js/api.js"></script>
-    <script type="module" src="js/scheduler.js"></script> </body>
+    <script type="module" src="js/scheduler.js"></script> 
+</body>
 </html>
