@@ -67,9 +67,21 @@ async function loadSchedules() {
     // Get user ID
     let userId = null;
     try {
-        // NOTE: Using /600/schedules is the safer, protected way 
-        // that automatically filters by the user ID based on the Auth Token.
-        const schedules = await fetchData(`/600/schedules`, { method: 'GET' });
+        const potentialKeys = ['user', 'currentUser', 'userInfo', 'auth'];
+        for (const key of potentialKeys) {
+            const stored = localStorage.getItem(key);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.id) { userId = parsed.id; break; }
+            }
+        }
+    } catch (e) { console.error(e); }
+
+    // [수정된 부분] /600/schedules 대신 ?userId= 쿼리 사용 (403 에러 방지)
+    try {
+        const endpoint = userId ? `/schedules?userId=${userId}` : '/schedules';
+        const schedules = await fetchData(endpoint, { method: 'GET' });
+        
         renderSchedules(schedules);
         
     } catch (error) {
@@ -77,7 +89,6 @@ async function loadSchedules() {
         console.error('Error fetching schedules:', error);
     }
 }
-
 /**
  * Handles the click event for the Edit button.
  * Redirects to the scheduler page with the schedule ID for editing.

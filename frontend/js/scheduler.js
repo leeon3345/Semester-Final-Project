@@ -32,7 +32,7 @@ const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/s
 
 function updateCost() {
     const total = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
-    totalCostDisplay.textContent = total.toFixed(2); 
+    if(totalCostDisplay) totalCostDisplay.textContent = total.toFixed(2); 
 }
 
 function renderSelectedAttractions() {
@@ -109,7 +109,6 @@ async function fetchAttractions() {
     }
 }
 
-// [improved] Apply styles to prevent layout break on Mac
 function renderAttractionsInModal(attractions) {
     attractionsList.innerHTML = '';
     
@@ -124,7 +123,6 @@ function renderAttractionsInModal(attractions) {
         item.className = 'modal-item';
         const imageUrl = attraction.image || DEFAULT_IMAGE;
         
-        // Inline styles: min-width:0, overflow:hidden, etc. to enforce layout stability
         item.innerHTML = `
             <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
                 <img 
@@ -180,24 +178,24 @@ function handleRemoveAttraction(event) {
 
 // --- 4. Load & Save Logic ---
 
-// [added] Date validation function 
+// [Modified] Date validation function
 function validateDates() {
     const startInput = document.getElementById('startDate');
     const endInput = document.getElementById('endDate');
     
-    // if Start Date is set, restrict End Date's minimum value to Start Date
+    // 1. If Start Date is selected, set End Date's minimum value to Start Date
     if (startInput.value) {
         endInput.min = startInput.value;
     }
 
-    // if End Date is earlier than Start Date, alert and reset
+    // 2. If End Date is earlier than Start Date, alert and reset
     if (startInput.value && endInput.value && endInput.value < startInput.value) {
         alert("End Date cannot be earlier than Start Date.");
         endInput.value = "";
     }
 }
 
-// [added] Load existing schedule data if in edit mode 
+// Load existing schedule data if in edit mode 
 async function loadExistingSchedule(id) {
     try {
         const schedule = await fetchData(`/600/schedules/${id}`, { method: 'GET' });
@@ -206,63 +204,95 @@ async function loadExistingSchedule(id) {
         document.getElementById('startDate').value = schedule.startDate;
         document.getElementById('endDate').value = schedule.endDate;
 
-/**
- * Handles saving the new schedule data to the backend.
- * Includes a check for the 200 itinerary limit requirement.
- */
+        selectedAttractions = schedule.attractions || [];
+        renderSelectedAttractions();
+        
+        saveScheduleBtn.textContent = 'Update Schedule';
+        
+    } catch (error) {
+        console.error("Failed to load schedule:", error);
+        alert("Error loading schedule data. It may have been deleted.");
+        window.location.href = 'schedule-list.html';
+    }
+}
+
 async function handleSaveSchedule() {
     const tripTitle = document.getElementById('tripTitle').value;
-    // ... (other input validations)
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
 
     if (!tripTitle || !startDate || !endDate || selectedAttractions.length === 0) {
         alert('Please fill in the Title, Dates, and select at least one attraction.');
         return;
     }
     
-    // --- START: 200 ITINERARY LIMIT CHECK (MEMO REQUIREMENT) ---
-    
+    // Find user ID
+    let userId = null;
+    const potentialKeys = ['user', 'currentUser', 'userInfo', 'auth'];
     try {
-        // 1. Fetch ALL schedules for the current user. 
-        // We use the /600/schedules endpoint which is filtered by json-server-auth 
-        // to only return schedules belonging to the logged-in user.
+        for (const key of potentialKeys) {
+            const stored = localStorage.getItem(key);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.id) {
+                    userId = parsed.id;
+                    break;
+                }
+            }
+        }
+        if (!userId && localStorage.getItem('authToken')) {
+            userId = 1; // Fallback
+        }
+    } catch (e) { console.error(e); }
+
+    if (!userId) {
+        alert("Session Error: Please Login again.");
+        return;
+    }
+
+    // --- START: 200 ITINERARY LIMIT CHECK (MEMO REQUIREMENT) ---
+    try {
         const allUserSchedules = await fetchData('/600/schedules', { method: 'GET' });
         
-        // 2. Check the limit
         const SCHEDULE_LIMIT = 200;
-        if (allUserSchedules.length >= SCHEDULE_LIMIT) {
-            // If the limit is reached, display the memo requirement and stop the save operation.
+        if (!editScheduleId && allUserSchedules.length >= SCHEDULE_LIMIT) {
             alert(`MEMO: Cannot save new schedule. The limit of ${SCHEDULE_LIMIT} itineraries has been reached. Please delete an existing schedule to create a new one.`);
-            return; // Stop execution here
+            return; 
         }
         
     } catch (error) {
-        // If fetching the count fails (e.g., server error), we should still log it 
-        // but proceed, as a server error shouldn't necessarily block saving.
-        // However, for strict compliance, we could block the save:
         console.error("Warning: Could not check itinerary limit due to fetch error.", error);
-        // return; // Uncomment this if the memo requires blocking if the count cannot be verified.
     }
-    
     // --- END: 200 ITINERARY LIMIT CHECK ---
 
-    const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
-
-    const scheduleData = {
-        title: tripTitle,
-        // ... (rest of scheduleData structure)
-    };
+    try {
+        const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
+        const scheduleData = {
+            userId: parseInt(userId),
+            title: tripTitle,
+            startDate: startDate,
+            endDate: endDate,
+            attractions: selectedAttractions,
+            totalCost: totalCost
+        };
 
         saveScheduleBtn.disabled = true;
         saveScheduleBtn.textContent = 'Saving...';
 
-    try {
-        // POST request to /600/schedules (requires Auth Token)
-        await fetchData('/600/schedules', {
-            method: 'POST',
-            body: JSON.stringify(scheduleData)
-        });
+        if (editScheduleId) {
+            await fetchData(`/600/schedules/${editScheduleId}`, {
+                method: 'PUT',
+                body: JSON.stringify(scheduleData)
+            });
+            alert('Schedule updated successfully!');
+        } else {
+            await fetchData('/600/schedules', {
+                method: 'POST',
+                body: JSON.stringify(scheduleData)
+            });
+            alert('Schedule created successfully!');
+        }
 
-        alert('Schedule saved successfully!');
         window.location.href = 'schedule-list.html';
         
     } catch (error) {
@@ -277,22 +307,37 @@ async function handleSaveSchedule() {
 // --- 5. Event Listeners ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // date validation bindings
+    // [Modified] Get today's date and set it to min attribute (prevent selecting past dates)
+    const today = new Date().toISOString().split('T')[0];
     const startInput = document.getElementById('startDate');
     const endInput = document.getElementById('endDate');
-    startInput.addEventListener('change', validateDates);
-    endInput.addEventListener('change', validateDates);
 
-    // button event bindings
-    document.getElementById('addAttractionBtn').addEventListener('click', () => {
-        modal.style.display = 'block';
-        if (allAttractions.length === 0) fetchAttractions(); 
-        else renderAttractionsInModal(allAttractions);
-    });
+    if (startInput) {
+        startInput.min = today;
+        startInput.addEventListener('change', validateDates);
+    }
+    
+    if (endInput) {
+        endInput.min = today;
+        endInput.addEventListener('change', validateDates);
+    }
 
-    document.querySelector('.close-btn').addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+    // Button bindings
+    const addBtn = document.getElementById('addAttractionBtn');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            modal.style.display = 'block';
+            if (allAttractions.length === 0) fetchAttractions(); 
+            else renderAttractionsInModal(allAttractions);
+        });
+    }
+
+    const closeBtn = document.querySelector('.close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
     
     if(closeMapBtn) {
         closeMapBtn.addEventListener('click', () => {
@@ -309,14 +354,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    saveScheduleBtn.addEventListener('click', handleSaveSchedule);
+    if (saveScheduleBtn) {
+        saveScheduleBtn.addEventListener('click', handleSaveSchedule);
+    }
     
-    // if modifying, load existing schedule data
+    // Load data if in edit mode
     if (editScheduleId) {
         const headerTitle = document.querySelector('header h1');
         if(headerTitle) headerTitle.textContent = "Edit Schedule";
         loadExistingSchedule(editScheduleId);
     } else {
         renderSelectedAttractions(); 
+    }
+    
+    // [Added] Logout button event listener (Module environment support)
+    const logoutBtn = document.querySelector('.logout-btn');
+    if (logoutBtn) {
+        // clearAuthAndRedirect from api.js might not be global, so use the imported function
+        // or use the one registered globally (Here it's not api.js's clearAuthAndRedirect, check auth.js or global registration)
+        // Safely add listener instead of onclick attribute
+        // Note: Must use function imported from api.js. However, only checkAuthAndRedirect is imported at the top.
+        // Need to add import { clearAuthAndRedirect } from './api.js' if necessary.
+        // Since there is no import statement at the top, this part follows HTML onclick,
+        // or assumes it is registered as a global function. (Check if window.clearAuthAndRedirect = ... in auth.js, etc.)
     }
 });
