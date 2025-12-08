@@ -1,0 +1,55 @@
+/* NAVIGATION BAR */
+.navigation-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, var(--primary), #0f2349);
+    padding: 14px 24px;
+    color: white;
+    box-shadow: 0 4px 14px rgba(11,17,32,0.18);
+}
+
+#attractionsList {
+    max-height: 350px;   
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.app-title {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.nav-links {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-nav {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+    transition: 0.2s;
+}
+
+.btn-nav:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.logout-btn {
+    background: #c8350d !important;
+}
+.logout-btn:hover {
+    background: #a4280a !important;
+}
+
+/* BODY */
+body {
+    background: var(--bg);
+    margin: 0;
+}

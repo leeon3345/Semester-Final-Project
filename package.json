@@ -1,13 +1,20 @@
-
 {
   "name": "travel-planner",
   "version": "1.0.0",
   "description": "Team Project Travel Planner",
   "scripts": {
-    "start": "json-server-auth backend/db.json --port 3000 --static frontend"
+    "start": "json-server-auth backend/db.json --port 3000 --static frontend",
+    "test": "jest"
   },
   "dependencies": {
     "json-server": "^0.17.4",
     "json-server-auth": "^2.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "babel-jest": "^30.2.0",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0"
   }
 }

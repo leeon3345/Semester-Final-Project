@@ -60,6 +60,21 @@
         </div>
     </div>
 
+    <div id="mapModal" class="modal">
+    <div class="modal-content" style="width: 80%; max-width: 800px; height: 500px;">
+        <span class="close-map-btn" style="float:right; cursor:pointer; font-size:24px;">&times;</span>
+        <h3 id="mapTitle">Location</h3>
+        <iframe 
+            id="googleMapFrame"
+            width="100%" 
+            height="400" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy">
+        </iframe>
+    </div>
+</div>
+
     <script type="module" src="js/api.js"></script>
     <script type="module" src="js/scheduler.js"></script> 
 </body>

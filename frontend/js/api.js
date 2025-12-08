@@ -1,15 +1,9 @@
-/**
- * API Configuration
- * ------------------
- */
+// frontend/js/api.js
 
-// 1. Backend Server URL
+import { navigate } from './navigation.js';
+
 const BASE_URL = "http://localhost:3000";
-
-// 2. Key for storing the Auth Token in localStorage
 const AUTH_TOKEN_KEY = 'authToken';
-
-// 3. Key for storing the full user object
 const CURRENT_USER_KEY = 'currentUser'; 
 
 // --- Utility Functions for Token Management ---
@@ -27,8 +21,10 @@ export function getAuthToken() {
  */
 export function clearAuthAndRedirect() {
     localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(CURRENT_USER_KEY); // Elimina los detalles del usuario
-    window.location.href = 'login.html'; 
+    localStorage.removeItem(CURRENT_USER_KEY);
+    
+    // [MODIFIED] Use navigate
+    navigate('index.html'); 
 }
 
 /**
@@ -51,7 +47,6 @@ export async function fetchData(endpoint, options = {}) {
         ...options.headers 
     };
 
-    // Attach Authorization header if a token exists
     const token = getAuthToken();
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
@@ -63,7 +58,6 @@ export async function fetchData(endpoint, options = {}) {
             headers
         });
 
-        // Handle 401 Unauthorized errors
         if (response.status === 401) {
              console.error("401 Unauthorized: Token either expired or invalid.");
              clearAuthAndRedirect(); 

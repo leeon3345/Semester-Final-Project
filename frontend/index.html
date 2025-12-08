@@ -41,7 +41,7 @@
       <h1>Plan your next trip here!</h1>
       <p>Weather, currency, scheduler and travel tips — your trip dashboard.</p>
       <div style="margin-top:12px">
-        <button class="btn" onclick="if(!localStorage.getItem('token')) window.location.href='login.html'; else window.location.href='frontend/scheduler.html'">Open Scheduler</button>
+        <button class="btn" onclick="if(!localStorage.getItem('authToken')) window.location.href='login.html'; else window.location.href='scheduler.html'">Open Scheduler</button>
       </div>
     </div>
 
@@ -80,58 +80,23 @@
   <!-- Full-Width Slideshow -->
   <div class="slideshow-wrapper-full">
     <div class="slideshow-container">
-
         <div class="mySlides fade">
-            <img src="https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=3150&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <img src="https://images.unsplash.com/photo-1508009603885-50cf7c579365?q=80&w=3150&auto=format&fit=crop">
         </div>
-
         <div class="mySlides fade">
-            <img src="https://plus.unsplash.com/premium_photo-1693149386423-2e4e264712e5?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <img src="https://plus.unsplash.com/premium_photo-1693149386423-2e4e264712e5?q=80&w=2832&auto=format&fit=crop">
         </div>
-
         <div class="mySlides fade">
-            <img src="https://images.unsplash.com/photo-1490077476659-095159692ab5?q=80&w=2302&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+            <img src="https://images.unsplash.com/photo-1490077476659-095159692ab5?q=80&w=2302&auto=format&fit=crop">
         </div>
-
     </div>
-</div>
-
-
-
-  </section>
+  </div>
 
   <div class="footer">© Cocoa Team</div>
 </div>
 
-<script src="js/home.js"></script>
+<script type="module" src="js/api.js"></script>
+<script type="module" src="js/home.js"></script>
 <script src="js/chatbot.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', ()=>{
-  // drawer init already runs in home.js via initPage() previously; ensure it's initialized
-  initPage && initPage();
-
-  // set drawer user display
-  const drawerUser = document.getElementById('drawer-user');
-  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-  drawerUser && (drawerUser.textContent = currentUser ? currentUser.username : '—');
-
-  // weather & currency bindings
-  fetchAndRenderWeather('Bangkok');
-
-  document.getElementById('ex-convert').addEventListener('click', ()=>{
-    const amt = Number(document.getElementById('ex-amount').value) || 0;
-    const from = document.getElementById('ex-from').value;
-    const to = document.getElementById('ex-to').value;
-    convertCurrency(amt, from, to);
-  });
-  document.getElementById('ex-swap').addEventListener('click', ()=>{
-    const from = document.getElementById('ex-from');
-    const to = document.getElementById('ex-to');
-    const tmp = from.value; from.value = to.value; to.value = tmp;
-    document.getElementById('ex-convert').click();
-  });
-
-});
-</script>
 </body>
 </html>
