@@ -1,4 +1,3 @@
-/* Usa las variables globales de tu diseño */
 :root{
     --primary:#0f2349;
     --accent:#def5f3;
@@ -9,7 +8,6 @@
     font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
   }
   
-  /* CONTENEDOR PRINCIPAL */
   .container {
       max-width: var(--maxwidth, 900px);
       margin: 20px auto;
@@ -19,7 +17,6 @@
       box-shadow: 0 8px 24px rgba(12,18,33,0.06);
   }
   
-  /* TITULOS */
   .main-header h1 {
       text-align: center;
       margin-top: 20px;
@@ -51,8 +48,7 @@
       font-weight: 600;
       color: var(--primary);
   }
-  
-  /* BOTÓN PRINCIPAL */
+
   .btn-primary {
       background: var(--primary);
       color: white;
@@ -115,7 +111,6 @@
       background: #a4280a;
   }
   
-  /* RESUMEN */
   .summary-section {
       margin-top: 25px;
       text-align: center;

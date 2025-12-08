@@ -2,13 +2,17 @@
 import { fetchData, checkAuthAndRedirect, clearAuthAndRedirect } from './api.js';
 
 // 1. Authentication Check
-//checkAuthAndRedirect();
+checkAuthAndRedirect();
 
 const schedulesContainer = document.getElementById('schedulesContainer');
 const logoutBtn = document.getElementById('logoutBtn');
 
 // --- Rendering and Deletion Functions ---
 
+/**
+ * Renders all schedules in HTML cards, including Edit and Delete buttons.
+ * @param {Array} schedules - List of schedule objects from the API.
+ */
 function renderSchedules(schedules) {
     schedulesContainer.innerHTML = ''; 
     
@@ -20,27 +24,35 @@ function renderSchedules(schedules) {
     schedules.forEach(schedule => {
         const card = document.createElement('div');
         card.className = 'schedule-card';
+        // Use a wrapper for buttons to allow flex layout via CSS
         card.innerHTML = `
             <h3>${schedule.title}</h3>
             <p><strong>Dates:</strong> ${schedule.startDate} to ${schedule.endDate}</p>
-            <p class="cost-summary"><strong>Total Cost:</strong> $${schedule.totalCost ? schedule.totalCost.toFixed(2) : 0}</p>
+            <p class="cost-summary"><strong>Total Cost:</strong> $${schedule.totalCost.toFixed(2)}</p>
             
             <div class="card-actions">
                 <button class="edit-btn btn-secondary" data-id="${schedule.id}">✏️ Edit</button>
+                
                 <button class="delete-btn btn-danger" data-id="${schedule.id}">🗑️ Delete</button>
             </div>
         `;
         schedulesContainer.appendChild(card);
     });
     
+    // Attach event listeners to the buttons
     attachScheduleListeners();
 }
 
+/**
+ * Attaches event listeners to the dynamically created Edit and Delete buttons.
+ */
 function attachScheduleListeners() {
+    // 1. Attach Delete listener
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', handleDeleteSchedule);
     });
     
+    // 2. NEW: Attach Edit listener
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', handleEditSchedule);
     });
@@ -55,32 +67,9 @@ async function loadSchedules() {
     // Get user ID
     let userId = null;
     try {
-        const potentialKeys = ['user', 'currentUser', 'userInfo', 'auth'];
-        for (const key of potentialKeys) {
-            const stored = localStorage.getItem(key);
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                if (parsed.id) { userId = parsed.id; break; }
-            }
-        }
-    } catch (e) { console.error(e); }
-
-    if (!userId) {
-        // Fallback: Token exists but ID not found, force logout
-        console.warn("User ID not found via localStorage.");
-        // alert("Session expired. Please login again.");
-        // clearAuthAndRedirect();
-        // return;
-        
-        // (for testing) temporarily assign ID 1 if urgent (uncomment if needed)
-        // userId = 1; 
-    }
-
-    try {
-        //  /600/schedules -> ?userId= query used (avoid 403 error)
-        const endpoint = userId ? `/schedules?userId=${userId}` : '/schedules';
-        const schedules = await fetchData(endpoint, { method: 'GET' });
-        
+        // NOTE: Using /600/schedules is the safer, protected way 
+        // that automatically filters by the user ID based on the Auth Token.
+        const schedules = await fetchData(`/600/schedules`, { method: 'GET' });
         renderSchedules(schedules);
         
     } catch (error) {
@@ -89,11 +78,22 @@ async function loadSchedules() {
     }
 }
 
+/**
+ * Handles the click event for the Edit button.
+ * Redirects to the scheduler page with the schedule ID for editing.
+ * @param {Event} event - The click event.
+ */
 function handleEditSchedule(event) {
     const scheduleId = event.target.dataset.id;
+    // Redirect to scheduler.html, passing the ID as a URL query parameter
     window.location.href = `scheduler.html?id=${scheduleId}`;
 }
 
+
+/**
+ * Handles the deletion of a saved schedule.
+ * @param {Event} event - The click event.
+ */
 async function handleDeleteSchedule(event) {
     const scheduleId = event.target.dataset.id;
     if (!confirm('Are you sure you want to delete this schedule?')) return;

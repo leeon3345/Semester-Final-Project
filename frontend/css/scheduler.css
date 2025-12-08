@@ -1,11 +1,13 @@
-/* Usa las variables globales de tu diseño */
-:root{
-    --primary:#0f2349;
-    --accent:#def5f3;
-    --card:#ffffff;
-    --bg:#f3f7fb;
-    --muted:#6b7280;
-    --radius:12px;
+/* =========================================================
+   Global Design Tokens
+   ========================================================= */
+   :root {
+    --primary: #0f2349;
+    --accent: #def5f3;
+    --card: #ffffff;
+    --bg: #f3f7fb;
+    --muted: #6b7280;
+    --radius: 12px;
     font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
   }
   
@@ -160,6 +162,12 @@
   .close-btn:hover,
   .close-map-btn:hover {
       color: var(--primary);
+  }
+
+  #attractionsList {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 15px;
   }
   
   /* MAP MODAL */
