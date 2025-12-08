@@ -2,7 +2,7 @@
 import { fetchData, checkAuthAndRedirect, clearAuthAndRedirect } from './api.js';
 
 // 1. Authentication Check
-//checkAuthAndRedirect();
+checkAuthAndRedirect();
 
 const schedulesContainer = document.getElementById('schedulesContainer');
 const logoutBtn = document.getElementById('logoutBtn');

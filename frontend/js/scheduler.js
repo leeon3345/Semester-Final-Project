@@ -3,7 +3,7 @@
 import { fetchData, checkAuthAndRedirect } from './api.js';
 
 // 1. Authentication Check
-//checkAuthAndRedirect();
+checkAuthAndRedirect();
 
 // State management
 let selectedAttractions = [];

@@ -1,4 +1,4 @@
-/* NAVIGATION BAR estilo premium */
+/* NAVIGATION BAR */
 .navigation-bar {
     display: flex;
     justify-content: space-between;
@@ -7,6 +7,12 @@
     padding: 14px 24px;
     color: white;
     box-shadow: 0 4px 14px rgba(11,17,32,0.18);
+}
+
+#attractionsList {
+    max-height: 350px;   
+    overflow-y: auto;
+    padding-right: 10px;
 }
 
 .app-title {
