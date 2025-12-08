@@ -73,7 +73,7 @@ function refreshGNBUser() {
   const currentUser = getLoggedInUser();
   const authToken = getAuthToken();
   const userSpan = document.getElementById('gnb-user');
-  const drawerUser = document.getElementById('drawer-user'); // 드로어 안의 유저 이름도 처리
+  const drawerUser = document.getElementById('drawer-user'); // Also handle the user name inside the drawer
 
   // GNB user greeting
   if (userSpan) {

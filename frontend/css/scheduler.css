@@ -9,239 +9,178 @@
     --muted: #6b7280;
     --radius: 12px;
     font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
-}
+  }
+  
+  /* CONTENEDOR PRINCIPAL */
+  .container {
+      max-width: var(--maxwidth, 900px);
+      margin: 20px auto;
+      padding: 20px;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(12,18,33,0.06);
+  }
+  
+  /* TITULOS */
+  .main-header h1 {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: 800;
+      color: var(--primary);
+  }
+  
+  /* INPUTS */
+  .trip-info-section input[type="text"],
+  .trip-info-section input[type="date"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: var(--radius);
+      border: 1px solid #e5e9f2;
+      background: #ffffff;
+      font-size: 15px;
+  }
+  
+  /* DATE GROUP */
+  .date-group {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+  }
+  
+  .date-group label {
+      font-weight: 600;
+      color: var(--primary);
+  }
+  
+  /* BOTÓN PRINCIPAL */
+  .btn-primary {
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-top: 14px;
+      font-weight: 700;
+      font-size: 16px;
+      transition: 0.2s;
+  }
+  
+  .btn-primary:hover {
+      background: #081731;
+  }
+  
+  /* GRID DE ATRACCIONES */
+  .attraction-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+      margin-top: 15px;
+  }
+  
+  /* TARJETAS */
+  .attraction-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(12,18,33,0.05);
+      border: 1px solid #ecf0f7;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+  }
+  
+  .attraction-card h4 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+  }
+  
+  .attraction-card p {
+      color: var(--muted);
+  }
+  
+  .attraction-card button {
+      background: #c8350d;
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      font-weight: 700;
+      cursor: pointer;
+  }
+  
+  .attraction-card button:hover {
+      background: #a4280a;
+  }
+  
+  /* RESUMEN */
+  .summary-section {
+      margin-top: 25px;
+      text-align: center;
+  }
+  
+  .total-cost-display {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 14px;
+  }
+  
+  /* MODAL BASE */
+  .modal {
+      position: fixed;
+      display: none;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(11,17,32,0.45);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+  }
+  
+  /* CONTENIDO MODAL */
+  .modal-content {
+      background: var(--card);
+      padding: 22px;
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 20px 48px rgba(12,18,33,0.18);
+  }
+  
+  .close-btn, .close-map-btn {
+      float: right;
+      cursor: pointer;
+      font-size: 22px;
+      color: var(--muted);
+  }
+  
+  .close-btn:hover,
+  .close-map-btn:hover {
+      color: var(--primary);
+  }
 
-/* =========================================================
-   Main Container
-   ========================================================= */
-.container {
-    max-width: var(--maxwidth, 900px);
-    margin: 20px auto;
-    padding: 20px;
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: 0 8px 24px rgba(12,18,33,0.06);
-}
-
-/* =========================================================
-   Page Title
-   ========================================================= */
-.main-header h1 {
-    text-align: center;
-    margin-top: 20px;
-    font-weight: 800;
-    color: var(--primary);
-}
-
-/* =========================================================
-   Trip Info Inputs
-   ========================================================= */
-.trip-info-section input[type="text"],
-.trip-info-section input[type="date"] {
-    width: 100%;
-    padding: 12px;
-    margin-top: 12px;
-    border-radius: var(--radius);
-    border: 1px solid #e5e9f2;
-    background: #ffffff;
-    font-size: 15px;
-}
-
-/* Date Inputs Row */
-.date-group {
-    margin-top: 10px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.date-group label {
-    font-weight: 600;
-    color: var(--primary);
-}
-
-/* =========================================================
-   Buttons
-   ========================================================= */
-.btn-primary {
-    background: var(--primary);
-    color: white;
-    padding: 12px 16px;
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    margin-top: 14px;
-    font-weight: 700;
-    font-size: 16px;
-    transition: 0.2s;
-}
-
-.btn-primary:hover {
-    background: #081731;
-}
-
-/* Enhanced Add Attraction Button */
-#addAttractionBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
-    background: linear-gradient(135deg, #0f2349, #1d3d7c);
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 15px;
-    cursor: pointer;
-    transition: 0.25s ease-out;
-    box-shadow: 0 6px 12px rgba(15,35,73,0.25);
-}
-
-#addAttractionBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 16px rgba(15,35,73,0.30);
-    background: linear-gradient(135deg, #132d5f, #254b8f);
-}
-
-/* =========================================================
-   Selected Attractions Grid
-   ========================================================= */
-.attraction-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 18px;
-    margin-top: 15px;
-}
-
-/* =========================================================
-   Attraction Card
-   ========================================================= */
-.attraction-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 16px;
-    box-shadow: 0 8px 20px rgba(12,18,33,0.05);
-    border: 1px solid #ecf0f7;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.attraction-card h4 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--primary);
-}
-
-.attraction-card p {
-    color: var(--muted);
-}
-
-/* Remove Button inside cards */
-.attraction-card button {
-    background: #c8350d;
-    color: white;
-    border: none;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.attraction-card button:hover {
-    background: #a4280a;
-}
-
-/* =========================================================
-   Summary Section
-   ========================================================= */
-.summary-section {
-    margin-top: 25px;
-    text-align: center;
-}
-
-.total-cost-display {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 14px;
-}
-
-/* =========================================================
-   Modal Base Styling
-   ========================================================= */
-/* Always centered using flexbox */
-.modal {
-    position: fixed;
-    display: none; /* Activated via JS: modal.style.display = "flex" */
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(11,17,32,0.45);
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-}
-
-/* Modal Content */
-.modal-content {
-    background: var(--card);
-    padding: 22px;
-    border-radius: var(--radius);
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 20px 48px rgba(12,18,33,0.18);
-}
-
-/* Close Buttons */
-.close-btn, .close-map-btn {
-    float: right;
-    cursor: pointer;
-    font-size: 22px;
-    color: var(--muted);
-}
-
-.close-btn:hover,
-.close-map-btn:hover {
-    color: var(--primary);
-}
-
-/* =========================================================
-   Modal: Attractions List (Scrollable)
-   ========================================================= */
-#attractionsList {
-    max-height: 360px;
+  #attractionsList {
+    max-height: 400px;
     overflow-y: auto;
-    padding-right: 6px;
-}
-
-#attractionsList::-webkit-scrollbar {
-    width: 7px;
-}
-
-#attractionsList::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 6px;
-}
-
-/* =========================================================
-   Map Modal
-   ========================================================= */
-#mapModal .modal-content {
-    max-width: 800px;
-    height: 520px;
-}
-
-/* =========================================================
-   Responsive Adjustments
-   ========================================================= */
-@media (max-width: 700px) {
-    .date-group {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
+    padding-right: 15px;
+  }
+  
+  /* MAP MODAL */
+  #mapModal .modal-content {
+      max-width: 800px;
+      height: 520px;
+  }
+  
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+      .date-group {
+          flex-direction: column;
+          align-items: flex-start;
+      }
+  }
   

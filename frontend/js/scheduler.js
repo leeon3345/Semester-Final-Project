@@ -70,7 +70,7 @@ function renderSelectedAttractions() {
         scheduleListContainer.appendChild(card);
     });
 
-    // 이벤트 리스너 연결
+    // Connect event listeners
     document.querySelectorAll('.remove-btn').forEach(button => {
         button.addEventListener('click', handleRemoveAttraction);
     });
