@@ -1,6 +1,6 @@
 // frontend/js/scheduler.js
 
-import { fetchData, checkAuthAndRedirect } from './api.js';
+import { fetchData, checkAuthAndRedirect, clearAuthAndRedirect } from './api.js';
 
 // 1. Authentication Check
 checkAuthAndRedirect();
@@ -9,9 +9,9 @@ checkAuthAndRedirect();
 let selectedAttractions = [];
 let allAttractions = [];
 
-// [edit feature] Check for id parameter in URL (determine edit mode)
+// [edit feature] Check for id parameter in URL
 const urlParams = new URLSearchParams(window.location.search);
-const editScheduleId = urlParams.get('id'); // if value exists, edit mode
+const editScheduleId = urlParams.get('id'); 
 
 // DOM Elements
 const modal = document.getElementById('attractionModal');
@@ -39,7 +39,12 @@ function renderSelectedAttractions() {
     scheduleListContainer.innerHTML = '';
 
     if (selectedAttractions.length === 0) {
-        scheduleListContainer.innerHTML = '<p class="info-msg">No attractions added yet. Use the "Add Attraction" button!</p>';
+        scheduleListContainer.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b; background: #f8fafc; border-radius: 12px; border: 2px dashed #e2e8f0;">
+                <p style="font-size: 1.1rem; margin-bottom: 10px;">No attractions added yet.</p>
+                <p style="font-size: 0.9rem;">Click the "Add Attraction" button above to start planning!</p>
+            </div>
+        `;
         return;
     }
     
@@ -49,6 +54,7 @@ function renderSelectedAttractions() {
         
         const imageUrl = attraction.image || DEFAULT_IMAGE;
         
+        // [수정] 카드 뷰 HTML 구조 개선
         card.innerHTML = `
             <img 
                 src="${imageUrl}" 
@@ -58,19 +64,22 @@ function renderSelectedAttractions() {
             >
             <div class="mini-card-content">
                 <h4>${attraction.name}</h4>
-                <p><strong>Cost:</strong> ${attraction.cost.toFixed(2)}</p>
-                ${attraction.desc ? `<p class="desc">${attraction.desc}</p>` : ''}
+                <p>💰 ${attraction.cost.toLocaleString()} KRW</p>
+                <div class="desc">${attraction.desc || 'No description available.'}</div>
                 
                 <div class="card-actions">
-                    <button class="remove-btn" data-id="${attraction.id}">Remove (x)</button>
-                    <button class="view-map-btn" data-name="${attraction.name}">🗺️ Map</button>
+                    <button class="view-map-btn" data-name="${attraction.name}">
+                        🗺️ Map
+                    </button>
+                    <button class="remove-btn" data-id="${attraction.id}" title="Remove">
+                        🗑️
+                    </button>
                 </div>
             </div>
         `;
         scheduleListContainer.appendChild(card);
     });
 
-    // Connect event listeners
     document.querySelectorAll('.remove-btn').forEach(button => {
         button.addEventListener('click', handleRemoveAttraction);
     });
@@ -129,13 +138,13 @@ function renderAttractionsInModal(attractions) {
                     src="${imageUrl}" 
                     alt="${attraction.name}"
                     onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';"
-                    style="width:60px; height:60px; object-fit:cover; border-radius:6px; display:block; flex-shrink:0;"
+                    style="width:50px; height:50px; object-fit:cover; border-radius:8px; display:block; flex-shrink:0;"
                 >
                 <div style="flex:1; overflow:hidden;">
-                    <div style="font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    <div style="font-weight:600; margin-bottom:2px; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                         ${attraction.name}
                     </div>
-                    <div style="font-size:14px; color:#666;">Cost: ${attraction.cost.toFixed(2)}</div>
+                    <div style="font-size:13px; color:#64748b;">💰 ${attraction.cost.toLocaleString()}</div>
                 </div>
             </div>
             <button 
@@ -178,24 +187,20 @@ function handleRemoveAttraction(event) {
 
 // --- 4. Load & Save Logic ---
 
-// [Modified] Date validation function
 function validateDates() {
     const startInput = document.getElementById('startDate');
     const endInput = document.getElementById('endDate');
     
-    // 1. If Start Date is selected, set End Date's minimum value to Start Date
     if (startInput.value) {
         endInput.min = startInput.value;
     }
 
-    // 2. If End Date is earlier than Start Date, alert and reset
     if (startInput.value && endInput.value && endInput.value < startInput.value) {
         alert("End Date cannot be earlier than Start Date.");
         endInput.value = "";
     }
 }
 
-// Load existing schedule data if in edit mode 
 async function loadExistingSchedule(id) {
     try {
         const schedule = await fetchData(`/600/schedules/${id}`, { method: 'GET' });
@@ -226,7 +231,6 @@ async function handleSaveSchedule() {
         return;
     }
     
-    // Find user ID
     let userId = null;
     const potentialKeys = ['user', 'currentUser', 'userInfo', 'auth'];
     try {
@@ -241,7 +245,7 @@ async function handleSaveSchedule() {
             }
         }
         if (!userId && localStorage.getItem('authToken')) {
-            userId = 1; // Fallback
+            userId = 1; 
         }
     } catch (e) { console.error(e); }
 
@@ -250,7 +254,6 @@ async function handleSaveSchedule() {
         return;
     }
 
-    // --- START: 200 ITINERARY LIMIT CHECK (MEMO REQUIREMENT) ---
     try {
         const allUserSchedules = await fetchData('/600/schedules', { method: 'GET' });
         
@@ -263,7 +266,6 @@ async function handleSaveSchedule() {
     } catch (error) {
         console.error("Warning: Could not check itinerary limit due to fetch error.", error);
     }
-    // --- END: 200 ITINERARY LIMIT CHECK ---
 
     try {
         const totalCost = selectedAttractions.reduce((sum, item) => sum + item.cost, 0);
@@ -307,7 +309,6 @@ async function handleSaveSchedule() {
 // --- 5. Event Listeners ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // [Modified] Get today's date and set it to min attribute (prevent selecting past dates)
     const today = new Date().toISOString().split('T')[0];
     const startInput = document.getElementById('startDate');
     const endInput = document.getElementById('endDate');
@@ -358,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveScheduleBtn.addEventListener('click', handleSaveSchedule);
     }
     
-    // Load data if in edit mode
     if (editScheduleId) {
         const headerTitle = document.querySelector('header h1');
         if(headerTitle) headerTitle.textContent = "Edit Schedule";
@@ -367,15 +367,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSelectedAttractions(); 
     }
     
-    // [Added] Logout button event listener (Module environment support)
     const logoutBtn = document.querySelector('.logout-btn');
     if (logoutBtn) {
-        // clearAuthAndRedirect from api.js might not be global, so use the imported function
-        // or use the one registered globally (Here it's not api.js's clearAuthAndRedirect, check auth.js or global registration)
-        // Safely add listener instead of onclick attribute
-        // Note: Must use function imported from api.js. However, only checkAuthAndRedirect is imported at the top.
-        // Need to add import { clearAuthAndRedirect } from './api.js' if necessary.
-        // Since there is no import statement at the top, this part follows HTML onclick,
-        // or assumes it is registered as a global function. (Check if window.clearAuthAndRedirect = ... in auth.js, etc.)
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearAuthAndRedirect();
+        });
     }
 });

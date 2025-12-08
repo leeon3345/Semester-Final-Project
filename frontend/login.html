@@ -17,14 +17,16 @@
     <div class="auth-container">
         <h2>✈️ Start Your Journey</h2>
         
-        <div class="input-group">
-            <input type="email" id="login-email" placeholder="Email Address" required>
-        </div>
-        <div class="input-group">
-            <input type="password" id="login-password" placeholder="Password" required>
-        </div>
+        <form id="login-form">
+            <div class="input-group">
+                <input type="email" id="login-email" placeholder="Email Address" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="login-password" placeholder="Password" required>
+            </div>
 
-        <button onclick="handleLogin()" class="btn-primary">Sign In</button>
+            <button type="submit" class="btn-primary">Sign In</button>
+        </form>
         
         <p class="switch-msg">
             Don't have an account? <a href="register.html">Sign Up</a>

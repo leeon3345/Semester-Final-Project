@@ -22,7 +22,11 @@ async function fetchAndStoreUserDetails(userId) {
     }
 }
 
-async function handleLogin() {
+// [Modified] Added event parameter to handle form submission
+async function handleLogin(event) {
+    // If called via form submit, prevent default reload
+    if (event) event.preventDefault();
+
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
@@ -42,7 +46,6 @@ async function handleLogin() {
         const userId = data.user.id;
         await fetchAndStoreUserDetails(userId); 
         
-        // [MODIFIED] Use navigate
         navigate('schedule-list.html'); 
 
     } catch (error) {
@@ -72,7 +75,6 @@ async function handleRegister() {
         const userId = data.user.id;
         await fetchAndStoreUserDetails(userId); 
 
-        // [MODIFIED] Use navigate
         navigate('schedule-list.html'); 
 
     } catch (error) {
@@ -98,5 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
             handleRegister();
         });
+    }
+
+    // [Added] Connect login form submit event
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
     }
 });
