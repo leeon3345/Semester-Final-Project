@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Saved Schedules</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/schedules.css"> </head>
+<body>
+    <header class="main-header">
+        <h1>My Saved Itineraries</h1>
+        <div>
+            <button onclick="window.location.href='index.html'" class="btn-secondary">🏠 Home</button>
+            <button id="logoutBtn" class="btn-secondary">Log Out</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="schedulesContainer" class="schedule-grid">
+            <p id="loading-msg">Loading your schedules...</p>
+        </div>
+        
+        <button onclick="window.location.href='scheduler.html'" class="btn-primary fixed-btn">
+            Create New Schedule (+)
+        </button>
+    </div>
+
+    <script type="module" src="js/api.js"></script>
+    <script type="module" src="js/schedules.js"></script> </body>
+</html>

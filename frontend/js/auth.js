@@ -1,99 +1,122 @@
-/**
- * Authentication Logic
- * ---------------------
- * Handles User Login and Registration using the API.
- * Dependencies: js/api.js (fetchData function)
- */
+// js/auth.js
 
-// DOM이 완전히 로드된 후 이벤트 리스너를 설정합니다.
-document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        // login.html의 form 제출 이벤트를 handleLogin 함수와 연결
-        loginForm.addEventListener('submit', handleLogin);
+// Import required functions from the API module
+import { fetchData, saveAuthToken, getAuthToken, clearAuthAndRedirect as apiClearAuth } from './api.js';
+
+// Key for storing the full user object
+const CURRENT_USER_KEY = 'currentUser';
+
+// --- Function to clear ALL local user data (Token + User Details) ---
+function clearAuthAndRedirect() {
+    apiClearAuth(); // Clear the token and redirect (from api.js)
+    localStorage.removeItem(CURRENT_USER_KEY); // Clear the user details
+}
+
+// --- Helper function to retrieve full user details ---
+async function fetchAndStoreUserDetails(userId) {
+    try {
+        // GET /600/users/:id endpoint is protected and requires Auth Token
+        const userDetails = await fetchData(`/600/users/${userId}`, { method: 'GET' });
+        
+        // Store the full details (including username) in localStorage
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userDetails));
+        console.log("User details saved:", userDetails);
+        
+    } catch(error) {
+        console.error("Failed to fetch full user details. Token might be invalid.", error);
+        alert('Warning: Login successful, but profile details failed to load. Try logging in again.');
+        throw error; 
     }
+}
 
-    const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        // register.html의 form 제출 이벤트를 handleRegister 함수와 연결
-        registerForm.addEventListener('submit', handleRegister);
-    }
-});
-/**
- * Handle Login Process
- * 1. Get input values.
- * 2. Send POST request to /login.
- * 3. Save JWT token to localStorage.
- */
-async function handleLogin(event) {
-    event.preventDefault(); // form의 기본 제출 동작(새로고침) 방지
 
+// --- Login Logic ---
+async function handleLogin() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
-    // Basic Validation
     if (!email || !password) {
-        alert("Please enter both email and password.");
+        alert('Please enter both email and password.');
         return;
     }
 
     try {
-        // 1. Request Login to Server
-        const response = await fetchData('/login', {
+        // 1. POST /login (Get Token and User ID)
+        const data = await fetchData('/login', {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
 
-        // 2. If successful, store the token
-        if (response.accessToken) {
-            localStorage.setItem('token', response.accessToken);
-            localStorage.setItem('user', JSON.stringify(response.user));
-            
-            alert(`Welcome back, ${response.user.username || 'Traveler'}!`);
-            window.location.href = 'index.html'; // Redirect to Home
-        }
+        saveAuthToken(data.accessToken); 
+        
+        const userId = data.user.id;
+        
+        // 2. FETCH and STORE full user details
+        await fetchAndStoreUserDetails(userId); 
+        
+        // 3. Redirect
+        window.location.href = 'schedule-list.html'; 
+
     } catch (error) {
-        console.error("Login Error:", error);
-        alert("Login failed. Please check your email or password.");
+        alert('Login failed: ' + error.message);
+        console.error('Login error:', error);
     }
 }
 
-/**
- * Handle Registration Process
- * 1. Get input values.
- * 2. Send POST request to /register.
- * 3. Redirect to login page upon success.
- */
-async function handleRegister(event) {
-    event.preventDefault(); // form의 기본 제출 동작(새로고침) 방지
-
+// --- Register Logic ---
+async function handleRegister() {
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
     const username = document.getElementById('reg-username').value;
 
-    // Basic Validation
     if (!email || !password || !username) {
-        alert("Please fill in all fields.");
+        alert('Please complete all fields.');
         return;
     }
 
     try {
-        // 1. Request Registration to Server
-        // json-server-auth requires 'email' and 'password'.
-        await fetchData('/register', {
+        // 1. POST /register (Creates user, gets Token and User ID)
+        const data = await fetchData('/register', {
             method: 'POST',
-            body: JSON.stringify({ 
-                email, 
-                password, 
-                username // Additional user info
-            })
+            body: JSON.stringify({ email, password, username })
         });
 
-        alert("Registration successful! Please sign in.");
-        window.location.href = 'login.html'; // Redirect to Login page
+        saveAuthToken(data.accessToken); 
+        
+        const userId = data.user.id;
+        
+        // 2. FETCH and STORE full user details immediately after registration
+        await fetchAndStoreUserDetails(userId); 
+
+        // 3. Redirect
+        window.location.href = 'schedule-list.html'; 
 
     } catch (error) {
-        console.error("Register Error:", error);
-        alert("Registration failed. This email might already be in use.");
+        alert('Registration failed: ' + error.message);
+        console.error('Register error:', error);
     }
 }
+
+// Export functions to be globally accessible from HTML's onclick attributes
+window.handleLogin = handleLogin;
+window.clearAuthAndRedirect = clearAuthAndRedirect; // For the "Log Out" button
+
+// --- Event Listeners & Page Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Redirect logged-in users away from auth pages
+    if (getAuthToken() && 
+        (window.location.pathname.includes('login.html') || 
+         window.location.pathname.includes('register.html'))) {
+        window.location.href = 'schedule-list.html';
+        return; // Stop further script execution
+    }
+
+    // 2. Attach listener specifically for the registration form
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent default form submission (page reload)
+            handleRegister();       // Call the registration logic
+        });
+    }
+});
